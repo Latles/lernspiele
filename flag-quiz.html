@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏴 Flaggen-Charade</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1923;
+    --card: #1a2a3a;
+    --card-hover: #243546;
+    --accent: #f0c040;
+    --accent-glow: rgba(240, 192, 64, 0.25);
+    --green: #34d399;
+    --red: #f87171;
+    --text: #e8edf2;
+    --text-dim: #8899aa;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .bg-pattern {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(52,211,153,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(248,113,113,0.03) 0%, transparent 50%);
+  }
+
+  #app {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 560px;
+    padding: 24px;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+  }
+
+  /* When result screen is shown, allow scrolling */
+  #app:has(.result-screen) {
+    justify-content: flex-start;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  /* ─── START SCREEN ─── */
+  .start-screen {
+    text-align: center;
+    animation: fadeUp 0.6s ease;
+  }
+
+  .start-screen h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .start-screen .subtitle {
+    color: var(--text-dim);
+    font-size: 1rem;
+    margin-bottom: 48px;
+  }
+
+  .mode-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  .mode-buttons {
+    display: flex; gap: 16px;
+    justify-content: center;
+  }
+
+  .mode-btn {
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 28px 36px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 200px;
+  }
+
+  .mode-btn:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--accent);
+  }
+
+  .mode-btn .icon { font-size: 2rem; margin-bottom: 12px; }
+  .mode-btn .label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 700; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .mode-btn .desc { font-size: 0.8rem; color: var(--text-dim); }
+
+  /* ─── QUIZ SCREEN ─── */
+  .quiz-screen {
+    width: 100%;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .quiz-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .quiz-header .mode-tag {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--accent);
+    background: var(--accent-glow);
+    padding: 4px 12px; border-radius: 100px;
+  }
+
+  .quiz-header .score-display {
+    font-size: 0.85rem; color: var(--text-dim); font-weight: 600;
+  }
+  .quiz-header .score-display span { color: var(--green); }
+
+  .progress-bar {
+    width: 100%; height: 6px;
+    background: var(--card);
+    border-radius: 100px;
+    margin-bottom: 40px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), #fde68a);
+    border-radius: 100px;
+    transition: width 0.5s ease;
+  }
+
+  .question-num {
+    text-align: center;
+    font-size: 0.8rem; color: var(--text-dim);
+    margin-bottom: 8px; font-weight: 600;
+  }
+
+  .flag-display {
+    text-align: center;
+    font-size: 8rem;
+    line-height: 1;
+    margin-bottom: 40px;
+    animation: popIn 0.4s ease;
+    filter: drop-shadow(0 8px 30px rgba(0,0,0,0.3));
+    user-select: none;
+  }
+
+  /* Easy mode: multiple choice */
+  .choices {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .choice-btn {
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: left;
+  }
+
+  .choice-btn:hover:not(.disabled) {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateX(6px);
+  }
+
+  .choice-btn.correct {
+    background: rgba(52, 211, 153, 0.15);
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .choice-btn.wrong {
+    background: rgba(248, 113, 113, 0.12);
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .choice-btn.disabled { pointer-events: none; opacity: 0.5; }
+  .choice-btn.correct.disabled { opacity: 1; }
+
+  /* Hard mode: text input */
+  .input-area {
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+
+  .text-input {
+    width: 100%;
+    background: var(--card);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    outline: none;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+
+  .text-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+
+  .text-input::placeholder { color: var(--text-dim); font-weight: 400; }
+
+  .submit-btn {
+    background: linear-gradient(135deg, var(--accent), #fde68a);
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+  }
+
+  .feedback {
+    text-align: center;
+    font-size: 1rem; font-weight: 600;
+    margin-top: 16px;
+    min-height: 28px;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .feedback.correct-fb { color: var(--green); }
+  .feedback.wrong-fb { color: var(--red); }
+
+  /* ─── RESULT SCREEN ─── */
+  .result-screen {
+    text-align: center;
+    animation: fadeUp 0.6s ease;
+  }
+
+  .result-screen .trophy { font-size: 5rem; margin-bottom: 16px; }
+
+  .result-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem; font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .result-screen .result-score {
+    font-size: 3.5rem; font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    background: linear-gradient(135deg, var(--accent), #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 16px 0;
+  }
+
+  .result-screen .result-text {
+    color: var(--text-dim); font-size: 1rem;
+    margin-bottom: 36px;
+  }
+
+  .result-details {
+    width: 100%;
+    margin-bottom: 32px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .result-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .result-row .r-flag { font-size: 1.6rem; }
+  .result-row .r-name { flex: 1; text-align: left; font-weight: 500; }
+  .result-row .r-icon { font-size: 1.2rem; }
+
+  .restart-btn {
+    background: var(--card);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 16px 48px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .restart-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    70% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @media (max-width: 500px) {
+    .start-screen h1 { font-size: 2rem; }
+    .mode-buttons { flex-direction: column; }
+    .mode-btn { min-width: unset; }
+    .flag-display { font-size: 6rem; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div id="app"></div>
+
+<script>
+const ALL_COUNTRIES = [
+  ["🇦🇫","Afghanistan"],["🇦🇱","Albanien"],["🇩🇿","Algerien"],["🇦🇩","Andorra"],["🇦🇴","Angola"],
+  ["🇦🇬","Antigua und Barbuda"],["🇦🇷","Argentinien"],["🇦🇲","Armenien"],["🇦🇺","Australien"],["🇦🇹","Österreich"],
+  ["🇦🇿","Aserbaidschan"],["🇧🇸","Bahamas"],["🇧🇭","Bahrain"],["🇧🇩","Bangladesch"],["🇧🇧","Barbados"],
+  ["🇧🇾","Belarus"],["🇧🇪","Belgien"],["🇧🇿","Belize"],["🇧🇯","Benin"],["🇧🇹","Bhutan"],
+  ["🇧🇴","Bolivien"],["🇧🇦","Bosnien und Herzegowina"],["🇧🇼","Botswana"],["🇧🇷","Brasilien"],["🇧🇳","Brunei"],
+  ["🇧🇬","Bulgarien"],["🇧🇫","Burkina Faso"],["🇧🇮","Burundi"],["🇰🇭","Kambodscha"],["🇨🇲","Kamerun"],
+  ["🇨🇦","Kanada"],["🇨🇻","Kap Verde"],["🇨🇫","Zentralafrikanische Republik"],["🇹🇩","Tschad"],["🇨🇱","Chile"],
+  ["🇨🇳","China"],["🇨🇴","Kolumbien"],["🇰🇲","Komoren"],["🇨🇬","Republik Kongo"],["🇨🇩","Demokratische Republik Kongo"],
+  ["🇨🇷","Costa Rica"],["🇭🇷","Kroatien"],["🇨🇺","Kuba"],["🇨🇾","Zypern"],["🇨🇿","Tschechien"],
+  ["🇩🇰","Dänemark"],["🇩🇯","Dschibuti"],["🇩🇲","Dominica"],["🇩🇴","Dominikanische Republik"],["🇪🇨","Ecuador"],
+  ["🇪🇬","Ägypten"],["🇸🇻","El Salvador"],["🇬🇶","Äquatorialguinea"],["🇪🇷","Eritrea"],["🇪🇪","Estland"],
+  ["🇸🇿","Eswatini"],["🇪🇹","Äthiopien"],["🇫🇯","Fidschi"],["🇫🇮","Finnland"],["🇫🇷","Frankreich"],
+  ["🇬🇦","Gabun"],["🇬🇲","Gambia"],["🇬🇪","Georgien"],["🇩🇪","Deutschland"],["🇬🇭","Ghana"],
+  ["🇬🇷","Griechenland"],["🇬🇩","Grenada"],["🇬🇹","Guatemala"],["🇬🇳","Guinea"],["🇬🇼","Guinea-Bissau"],
+  ["🇬🇾","Guyana"],["🇭🇹","Haiti"],["🇭🇳","Honduras"],["🇭🇺","Ungarn"],["🇮🇸","Island"],
+  ["🇮🇳","Indien"],["🇮🇩","Indonesien"],["🇮🇷","Iran"],["🇮🇶","Irak"],["🇮🇪","Irland"],
+  ["🇮🇱","Israel"],["🇮🇹","Italien"],["🇨🇮","Elfenbeinküste"],["🇯🇲","Jamaika"],["🇯🇵","Japan"],
+  ["🇯🇴","Jordanien"],["🇰🇿","Kasachstan"],["🇰🇪","Kenia"],["🇰🇮","Kiribati"],["🇰🇵","Nordkorea"],
+  ["🇰🇷","Südkorea"],["🇰🇼","Kuwait"],["🇰🇬","Kirgisistan"],["🇱🇦","Laos"],["🇱🇻","Lettland"],
+  ["🇱🇧","Libanon"],["🇱🇸","Lesotho"],["🇱🇷","Liberia"],["🇱🇾","Libyen"],["🇱🇮","Liechtenstein"],
+  ["🇱🇹","Litauen"],["🇱🇺","Luxemburg"],["🇲🇬","Madagaskar"],["🇲🇼","Malawi"],["🇲🇾","Malaysia"],
+  ["🇲🇻","Malediven"],["🇲🇱","Mali"],["🇲🇹","Malta"],["🇲🇭","Marshallinseln"],["🇲🇷","Mauretanien"],
+  ["🇲🇺","Mauritius"],["🇲🇽","Mexiko"],["🇫🇲","Mikronesien"],["🇲🇩","Moldau"],["🇲🇨","Monaco"],
+  ["🇲🇳","Mongolei"],["🇲🇪","Montenegro"],["🇲🇦","Marokko"],["🇲🇿","Mosambik"],["🇲🇲","Myanmar"],
+  ["🇳🇦","Namibia"],["🇳🇷","Nauru"],["🇳🇵","Nepal"],["🇳🇱","Niederlande"],["🇳🇿","Neuseeland"],
+  ["🇳🇮","Nicaragua"],["🇳🇪","Niger"],["🇳🇬","Nigeria"],["🇲🇰","Nordmazedonien"],["🇳🇴","Norwegen"],
+  ["🇴🇲","Oman"],["🇵🇰","Pakistan"],["🇵🇼","Palau"],["🇵🇸","Palästina"],["🇵🇦","Panama"],
+  ["🇵🇬","Papua-Neuguinea"],["🇵🇾","Paraguay"],["🇵🇪","Peru"],["🇵🇭","Philippinen"],["🇵🇱","Polen"],
+  ["🇵🇹","Portugal"],["🇶🇦","Katar"],["🇷🇴","Rumänien"],["🇷🇺","Russland"],["🇷🇼","Ruanda"],
+  ["🇰🇳","St. Kitts und Nevis"],["🇱🇨","St. Lucia"],["🇻🇨","St. Vincent und die Grenadinen"],
+  ["🇼🇸","Samoa"],["🇸🇲","San Marino"],["🇸🇹","São Tomé und Príncipe"],["🇸🇦","Saudi-Arabien"],
+  ["🇸🇳","Senegal"],["🇷🇸","Serbien"],["🇸🇨","Seychellen"],["🇸🇱","Sierra Leone"],["🇸🇬","Singapur"],
+  ["🇸🇰","Slowakei"],["🇸🇮","Slowenien"],["🇸🇧","Salomonen"],["🇸🇴","Somalia"],["🇿🇦","Südafrika"],
+  ["🇸🇸","Südsudan"],["🇪🇸","Spanien"],["🇱🇰","Sri Lanka"],["🇸🇩","Sudan"],["🇸🇷","Suriname"],
+  ["🇸🇪","Schweden"],["🇨🇭","Schweiz"],["🇸🇾","Syrien"],["🇹🇼","Taiwan"],["🇹🇯","Tadschikistan"],
+  ["🇹🇿","Tansania"],["🇹🇭","Thailand"],["🇹🇱","Osttimor"],["🇹🇬","Togo"],["🇹🇴","Tonga"],
+  ["🇹🇹","Trinidad und Tobago"],["🇹🇳","Tunesien"],["🇹🇷","Türkei"],["🇹🇲","Turkmenistan"],["🇹🇻","Tuvalu"],
+  ["🇺🇬","Uganda"],["🇺🇦","Ukraine"],["🇦🇪","Vereinigte Arabische Emirate"],["🇬🇧","Vereinigtes Königreich"],
+  ["🇺🇸","Vereinigte Staaten"],["🇺🇾","Uruguay"],["🇺🇿","Usbekistan"],["🇻🇺","Vanuatu"],
+  ["🇻🇦","Vatikanstadt"],["🇻🇪","Venezuela"],["🇻🇳","Vietnam"],["🇾🇪","Jemen"],["🇿🇲","Sambia"],["🇿🇼","Simbabwe"]
+];
+
+const app = document.getElementById('app');
+let mode, questions, current, score, answers;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function normalize(s) {
+  return s.toLowerCase().replace(/[-–—\s]/g, '').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function checkAnswer(input, correct) {
+  const n1 = normalize(input);
+  const n2 = normalize(correct);
+  if (n1 === n2) return true;
+  // also accept without umlauts directly
+  const n3 = correct.toLowerCase().replace(/[-–—\s]/g, '');
+  if (n1 === normalize(n3)) return true;
+  // fuzzy: allow off by 2 chars for long names
+  if (correct.length > 6) {
+    let dist = levenshtein(n1, n2);
+    if (dist <= 2) return true;
+  }
+  return false;
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({length: m+1}, () => Array(n+1).fill(0));
+  for (let i = 0; i <= m; i++) d[i][0] = i;
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]!==b[j-1]?1:0));
+  return d[m][n];
+}
+
+function generateQuestions() {
+  const picked = shuffle(ALL_COUNTRIES).slice(0, 10);
+  return picked.map(([flag, name]) => {
+    let options = [name];
+    const others = ALL_COUNTRIES.filter(c => c[1] !== name);
+    const decoys = shuffle(others).slice(0, 2).map(c => c[1]);
+    options.push(...decoys);
+    options = shuffle(options);
+    return { flag, name, options };
+  });
+}
+
+function showStart() {
+  app.innerHTML = `
+    <div class="start-screen">
+      <h1>Flaggen-Charade</h1>
+      <p class="subtitle">Erkennst du alle Länderflaggen?</p>
+      <p class="mode-label">Schwierigkeitsstufe wählen</p>
+      <div class="mode-buttons">
+        <div class="mode-btn" onclick="startGame('easy')">
+          <div class="icon">😊</div>
+          <div class="label">Einfach</div>
+          <div class="desc">Wähle aus 3 Optionen</div>
+        </div>
+        <div class="mode-btn" onclick="startGame('hard')">
+          <div class="icon">🔥</div>
+          <div class="label">Schwer</div>
+          <div class="desc">Tippe den Namen ein</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function startGame(m) {
+  mode = m;
+  questions = generateQuestions();
+  current = 0;
+  score = 0;
+  answers = [];
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[current];
+  const progress = ((current) / 10) * 100;
+
+  let answerArea = '';
+  if (mode === 'easy') {
+    answerArea = `<div class="choices">
+      ${q.options.map((opt, i) => `<button class="choice-btn" onclick="answerEasy(this, '${opt.replace(/'/g, "\\'")}')">${opt}</button>`).join('')}
+    </div>`;
+  } else {
+    answerArea = `<div class="input-area">
+      <input class="text-input" id="hardInput" type="text" placeholder="Ländername eingeben…" autocomplete="off"
+        onkeydown="if(event.key==='Enter')answerHard()">
+      <button class="submit-btn" onclick="answerHard()">Prüfen</button>
+      <div class="feedback" id="feedback"></div>
+    </div>`;
+  }
+
+  app.innerHTML = `
+    <div class="quiz-screen">
+      <div class="quiz-header">
+        <span class="mode-tag">${mode === 'easy' ? '😊 Einfach' : '🔥 Schwer'}</span>
+        <span class="score-display"><span>${score}</span> / ${current}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
+      <div class="question-num">Frage ${current + 1} von 10</div>
+      <div class="flag-display">${q.flag}</div>
+      ${answerArea}
+    </div>`;
+
+  if (mode === 'hard') {
+    setTimeout(() => document.getElementById('hardInput')?.focus(), 100);
+  }
+}
+
+function answerEasy(btn, chosen) {
+  const q = questions[current];
+  const correct = chosen === q.name;
+  if (correct) { score++; btn.classList.add('correct'); }
+  else { btn.classList.add('wrong'); }
+
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.classList.add('disabled');
+    if (b.textContent === q.name) b.classList.add('correct');
+  });
+
+  answers.push({ flag: q.flag, name: q.name, correct });
+  setTimeout(next, 1200);
+}
+
+function answerHard() {
+  const input = document.getElementById('hardInput');
+  const fb = document.getElementById('feedback');
+  if (!input || !input.value.trim()) return;
+
+  const q = questions[current];
+  const correct = checkAnswer(input.value.trim(), q.name);
+
+  if (correct) {
+    score++;
+    fb.className = 'feedback correct-fb';
+    fb.textContent = '✓ Richtig!';
+    input.style.borderColor = 'var(--green)';
+  } else {
+    fb.className = 'feedback wrong-fb';
+    fb.textContent = `✗ Falsch — Es war: ${q.name}`;
+    input.style.borderColor = 'var(--red)';
+  }
+
+  input.disabled = true;
+  document.querySelector('.submit-btn').style.display = 'none';
+  answers.push({ flag: q.flag, name: q.name, correct });
+  setTimeout(next, 1800);
+}
+
+function next() {
+  current++;
+  if (current >= 10) showResult();
+  else showQuestion();
+}
+
+function showResult() {
+  let trophy, msg;
+  if (score === 10) { trophy = '🏆'; msg = 'Perfekt! Du bist ein Flaggen-Genie!'; }
+  else if (score >= 8) { trophy = '🥇'; msg = 'Hervorragend! Fast perfekt!'; }
+  else if (score >= 6) { trophy = '🥈'; msg = 'Gut gemacht! Weiter so!'; }
+  else if (score >= 4) { trophy = '🥉'; msg = 'Nicht schlecht, aber da geht mehr!'; }
+  else { trophy = '📚'; msg = 'Übung macht den Meister!'; }
+
+  const rows = answers.map(a => `
+    <div class="result-row">
+      <span class="r-flag">${a.flag}</span>
+      <span class="r-name">${a.name}</span>
+      <span class="r-icon">${a.correct ? '✅' : '❌'}</span>
+    </div>`).join('');
+
+  app.innerHTML = `
+    <div class="result-screen">
+      <div class="trophy">${trophy}</div>
+      <h2>Ergebnis</h2>
+      <div class="result-score">${score} / 10</div>
+      <p class="result-text">${msg}</p>
+      <div class="result-details">${rows}</div>
+      <button class="restart-btn" onclick="showStart()">Nochmal spielen</button>
+    </div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+showStart();
+</script>
+</body>
+</html>

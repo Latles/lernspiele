@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Emoji Charade</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(145deg, #fdfcfb 0%, #e8dfd5 50%, #f5ebe0 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 16px;
+    font-family: 'DM Sans', sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  #app { width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 20px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .title { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 900; color: #1e293b; letter-spacing: -0.5px; }
+  .subtitle { font-size: 13px; font-weight: 500; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; }
+  .score-bar { display: flex; gap: 8px; align-items: center; }
+  .round-badge { background: #1e293b; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .score-badge { background: #fef3c7; color: #92400e; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+  .emoji-card { background: #fff; border-radius: 20px; padding: 28px 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .emoji-card.vis { opacity: 1; transform: scale(1); }
+  .emoji-card.hid { opacity: 0; transform: scale(0.95); }
+  .emoji-label { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; text-align: center; }
+  .emoji-display { font-size: 42px; text-align: center; line-height: 1.6; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 14px; }
+  .emoji-char { display: inline-block; animation: popIn 0.4s ease-out both; }
+  .hint-box { background: #fef9ee; border: 1px solid #fde68a; border-radius: 14px; padding: 12px 18px; font-size: 15px; color: #92400e; display: flex; align-items: center; gap: 8px; animation: slideUp 0.3s ease-out; }
+  .hint-box span { font-weight: 500; }
+  .answer-box { background: #fff; border-radius: 14px; padding: 16px 20px; border: 2px solid #94a3b8; text-align: center; animation: slideUp 0.3s ease-out; }
+  .answer-box.correct { border-color: #22c55e; }
+  .answer-label { font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .answer-text { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #1e293b; line-height: 1.4; }
+  .points-earned { margin-top: 8px; font-size: 14px; font-weight: 600; color: #22c55e; }
+  .input-area { display: flex; flex-direction: column; gap: 12px; }
+  .input-row { display: flex; gap: 8px; }
+  .input-row.shake { animation: shakeX 0.4s ease; }
+  .guess-input { flex: 1; padding: 14px 18px; font-size: 16px; font-family: 'DM Sans', sans-serif; border: 2px solid #d1d5db; border-radius: 14px; outline: none; background: #fff; transition: border-color 0.2s; color: #1e293b; -webkit-appearance: none; }
+  .guess-input.error { border-color: #ef4444; }
+  .guess-input:focus { border-color: #94a3b8; }
+  .submit-btn { width: 52px; height: 52px; border-radius: 14px; border: none; background: #1e293b; color: #fff; font-size: 20px; font-weight: 700; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .submit-btn:active { transform: scale(0.95); }
+  .wrong-msg { font-size: 14px; color: #ef4444; font-weight: 500; padding-left: 4px; animation: slideUp 0.2s ease-out; }
+  .action-row { display: flex; gap: 10px; }
+  .hint-btn, .giveup-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .hint-btn { border: 1px solid #fde68a; background: #fffbeb; color: #92400e; }
+  .giveup-btn { border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; }
+  .hint-btn:active, .giveup-btn:active { transform: scale(0.97); }
+  .next-btn { padding: 16px; border-radius: 14px; border: none; background: #1e293b; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; width: 100%; }
+  .next-btn:active { transform: scale(0.97); }
+  .progress-row { display: flex; justify-content: center; gap: 8px; padding-top: 4px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #e2e8f0; transition: all 0.3s ease; }
+  .dot.active { background: #1e293b; transform: scale(1.3); }
+  .dot.correct { background: #22c55e; }
+  .dot.wrong { background: #ef4444; }
+  .game-over { background: #fff; border-radius: 24px; padding: 36px 24px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.06); animation: floatIn 0.5s ease-out; }
+  .game-over-emoji { font-size: 56px; margin-bottom: 8px; }
+  .game-over-title { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 900; color: #1e293b; margin-bottom: 6px; }
+  .game-over-score { font-size: 20px; font-weight: 700; color: #64748b; margin-bottom: 4px; }
+  .game-over-msg { font-size: 15px; color: #94a3b8; margin-bottom: 20px; line-height: 1.5; }
+  .results-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; text-align: left; }
+  .result-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; background: #f8fafc; animation: fadeStagger 0.3s ease-out both; }
+  .result-icon { font-size: 18px; flex-shrink: 0; }
+  .result-text { font-size: 14px; color: #334155; font-weight: 500; }
+  .play-again-btn { padding: 16px 32px; border-radius: 14px; border: none; background: #1e293b; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .play-again-btn:active { transform: scale(0.97); }
+  .proverb-count { font-size: 13px; color: #94a3b8; margin-top: 12px; }
+  .dn { display: none !important; }
+  @keyframes floatIn { from { opacity: 0; transform: translateY(20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes popIn { 0% { opacity: 0; transform: scale(0.3); } 60% { transform: scale(1.1); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes shakeX { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeStagger { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="title">Emoji Charade</div>
+      <div class="subtitle">Deutsche Sprichw&#246;rter</div>
+    </div>
+    <div class="score-bar">
+      <div class="round-badge" id="roundBadge">1 / 10</div>
+      <div class="score-badge" id="scoreBadge">&#11088; 0</div>
+    </div>
+  </div>
+  <div id="gameScreen">
+    <div class="emoji-card vis" id="emojiCard">
+      <div class="emoji-label">Welches Sprichwort ist das?</div>
+      <div class="emoji-display" id="emojiDisplay"></div>
+    </div>
+    <div class="hint-box dn" id="hintBox">&#128161; <span id="hintText"></span></div>
+    <div class="answer-box dn" id="answerBox">
+      <div class="answer-label" id="answerLabel"></div>
+      <div class="answer-text" id="answerText"></div>
+      <div class="points-earned dn" id="pointsEarned"></div>
+    </div>
+    <div class="input-area">
+      <div class="input-row" id="inputRow">
+        <input class="guess-input" id="guessInput" type="text" placeholder="Deine Antwort..." autocomplete="off" autocapitalize="sentences">
+        <button class="submit-btn" id="submitBtn">&#10003;</button>
+      </div>
+      <div class="wrong-msg dn" id="wrongMsg">Nicht ganz... Versuch's nochmal!</div>
+      <div class="action-row" id="actionRow">
+        <button class="hint-btn" id="hintBtn">&#128161; Hinweis</button>
+        <button class="giveup-btn" id="giveupBtn">&#127987; Aufl&#246;sen</button>
+      </div>
+      <button class="next-btn dn" id="nextBtn"></button>
+    </div>
+    <div class="progress-row" id="progressRow"></div>
+  </div>
+  <div class="game-over dn" id="gameOverScreen">
+    <div class="game-over-emoji" id="goEmoji"></div>
+    <div class="game-over-title">Spiel vorbei!</div>
+    <div class="game-over-score" id="goScore"></div>
+    <div class="game-over-msg" id="goMsg"></div>
+    <div class="results-list" id="resultsList"></div>
+    <button class="play-again-btn" id="playAgainBtn">&#128260; Nochmal spielen</button>
+    <div class="proverb-count" id="proverbCount"></div>
+  </div>
+</div>
+<script>
+// ONLY Unicode 6.0-7.0 emojis used - maximum compatibility
+// No ZWJ sequences, no Unicode 9.0+ emojis
+var P = [
+  { e: "\uD83C\uDF4E \uD83C\uDF33 \u2B07\uFE0F \uD83D\uDEAB \uD83C\uDFC3", a: "Der Apfel f\u00e4llt nicht weit vom Stamm", h: "Kinder \u00e4hneln ihren Eltern" },
+  { e: "\uD83D\uDC26 \u270B \uD83D\uDC4D \uD83D\uDD4A \uD83C\uDFE0 \uD83D\uDC4E", a: "Besser ein Spatz in der Hand als eine Taube auf dem Dach", h: "Lieber etwas Sicheres haben" },
+  { e: "\uD83D\uDCAC \u270B \uD83D\uDE36 \uD83C\uDFC6", a: "Reden ist Silber, Schweigen ist Gold", h: "Manchmal besser still sein" },
+  { e: "\uD83C\uDF05 \u23F0 \uD83D\uDCB0 \uD83D\uDC44", a: "Morgenstund hat Gold im Mund", h: "Fr\u00fches Aufstehen lohnt sich" },
+  { e: "\uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC4D \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC4E", a: "Vier Augen sehen mehr als zwei", h: "Zusammenarbeit hilft" },
+  { e: "\uD83D\uDC31 \uD83D\uDEAA \uD83D\uDC2D \uD83D\uDC83 \uD83C\uDF89", a: "Wenn die Katze aus dem Haus ist, tanzen die M\u00e4use", h: "Keine Aufsicht = Party" },
+  { e: "\uD83D\uDC14 \uD83D\uDE48 \uD83C\uDF3E \u2705", a: "Auch ein blindes Huhn findet mal ein Korn", h: "Auch Gl\u00fckstreffer passieren" },
+  { e: "\uD83D\uDC15 \uD83D\uDCAC \uD83D\uDCAC \uD83D\uDEAB \uD83D\uDE2C", a: "Bellende Hunde bei\u00dfen nicht", h: "Wer viel droht, handelt selten" },
+  { e: "\uD83C\uDFC3 \uD83C\uDFC3 \uD83C\uDFC3 \uD83D\uDC15 \uD83D\uDE2C \uD83C\uDFC3", a: "Den Letzten bei\u00dfen die Hunde", h: "Wer zu sp\u00e4t kommt, hat Pech" },
+  { e: "\uD83C\uDF05 \uD83D\uDC26 \uD83D\uDC1B \uD83C\uDFA3", a: "Der fr\u00fche Vogel f\u00e4ngt den Wurm", h: "Wer fr\u00fch dran ist, hat Vorteile" },
+  { e: "\uD83D\uDCA7 \uD83D\uDCA7 \uD83D\uDCA7 \u26F0 \u231B", a: "Steter Tropfen h\u00f6hlt den Stein", h: "Ausdauer zahlt sich aus" },
+  { e: "\uD83D\uDEE4 \uD83D\uDEE4 \uD83D\uDEE4 \u27A1\uFE0F \uD83C\uDFDB", a: "Alle Wege f\u00fchren nach Rom", h: "Es gibt viele M\u00f6glichkeiten zum Ziel" },
+  { e: "\uD83D\uDC51 \uD83D\uDE24 \u2B07\uFE0F \uD83D\uDCA5", a: "Hochmut kommt vor dem Fall", h: "\u00dcberheblichkeit f\u00fchrt zum Scheitern" },
+  { e: "\uD83D\uDE08 \uD83D\uDC63 \uD83D\uDC63 \u2702\uFE0F", a: "L\u00fcgen haben kurze Beine", h: "L\u00fcgen fliegen schnell auf" },
+  { e: "\uD83D\uDCDD \uD83D\uDCDD \uD83D\uDCDD \u27A1\uFE0F \uD83C\uDFC6", a: "\u00dcbung macht den Meister", h: "Durch Wiederholung wird man gut" },
+  { e: "\uD83C\uDF39 \uD83D\uDEAB \uD83D\uDE16", a: "Keine Rose ohne Dornen", h: "Sch\u00f6nes hat auch Schattenseiten" },
+  { e: "\uD83D\uDC37 \uD83C\uDF40 \uD83C\uDFB0", a: "Schwein gehabt", h: "Gl\u00fcck gehabt!" },
+  { e: "\uD83D\uDC68 \uD83D\uDC68 \uD83D\uDC68 \uD83C\uDF72 \uD83D\uDC4E", a: "Viele K\u00f6che verderben den Brei", h: "Zu viele Beteiligte schaden" },
+  { e: "\uD83C\uDF72 \u2764\uFE0F \uD83C\uDF72", a: "Jeder Topf findet seinen Deckel", h: "F\u00fcr jeden gibt es den passenden Partner" },
+  { e: "\uD83C\uDD95 \u2728 \uD83C\uDFE0 \uD83D\uDC4D", a: "Neue Besen kehren gut", h: "Am Anfang ist man besonders eifrig" },
+  { e: "\u2764\uFE0F \uD83D\uDE0D \uD83D\uDE48 \uD83D\uDE48 \uD83D\uDE48", a: "Liebe macht blind", h: "Verliebte sehen keine Fehler" },
+  { e: "\uD83D\uDC74 \uD83D\uDC75 \u2764\uFE0F \uD83D\uDEAB \u274C", a: "Alte Liebe rostet nicht", h: "Gef\u00fchle von fr\u00fcher bleiben bestehen" },
+  { e: "\uD83D\uDC41 \u274C \u27A1\uFE0F \uD83D\uDCAD \u274C", a: "Aus den Augen, aus dem Sinn", h: "Was man nicht sieht, vergisst man" },
+  { e: "\uD83D\uDE36 \uD83C\uDF0A \u2B07\uFE0F \u2B07\uFE0F \u2B07\uFE0F", a: "Stille Wasser sind tief", h: "Ruhige Menschen haben viel in sich" },
+  { e: "\uD83D\uDCA8 \uD83C\uDF31 \u27A1\uFE0F \uD83C\uDF2A \uD83C\uDF3E", a: "Wer Wind s\u00e4t, wird Sturm ernten", h: "Schlechtes Verhalten hat Konsequenzen" },
+  { e: "\uD83C\uDF32 \uD83D\uDCE2 \u27A1\uFE0F \uD83C\uDF32 \uD83D\uDCE2", a: "Wie man in den Wald hineinruft, so schallt es heraus", h: "Wie man andere behandelt, wird man selbst behandelt" },
+  { e: "\uD83D\uDD28 \uD83D\uDCA5 \uD83C\uDFAF \uD83D\uDC46", a: "Den Nagel auf den Kopf treffen", h: "Genau das Richtige sagen" },
+  { e: "\uD83D\uDD73 \u26CF \u27A1\uFE0F \uD83D\uDE31 \u2B07\uFE0F", a: "Wer anderen eine Grube gr\u00e4bt, f\u00e4llt selbst hinein", h: "Wer anderen schadet, schadet sich selbst" },
+  { e: "\uD83C\uDFC1 \uD83D\uDC4D \u27A1\uFE0F \uD83D\uDC4D \uD83D\uDC4D \uD83D\uDC4D", a: "Ende gut, alles gut", h: "Hauptsache es geht gut aus" },
+  { e: "\u2728 \uD83D\uDCB0 \u274C \uD83D\uDCB0 \uD83D\uDCB0", a: "Es ist nicht alles Gold, was gl\u00e4nzt", h: "Der Schein kann tr\u00fcgen" },
+  { e: "\uD83D\uDC68 \uD83D\uDD28 \uD83C\uDF40", a: "Jeder ist seines Gl\u00fcckes Schmied", h: "Man formt sein eigenes Schicksal" },
+  { e: "\u23F0 \uD83D\uDC4E \uD83D\uDEAB \uD83D\uDC4E \uD83D\uDC4E", a: "Besser sp\u00e4t als nie", h: "Lieber versp\u00e4tet als gar nicht" },
+  { e: "\uD83C\uDFC3 \u27A1\uFE0F \uD83C\uDFAF", a: "Wer zuerst kommt, mahlt zuerst", h: "Wer fr\u00fcher da ist, hat Vorrang" },
+  { e: "\uD83C\uDF0D \u27A1\uFE0F \uD83C\uDFE0 \uD83C\uDFE0", a: "Die Welt ist ein Dorf", h: "Man trifft sich immer zweimal" },
+  { e: "\uD83D\uDC94 \uD83C\uDF40", a: "Scherben bringen Gl\u00fcck", h: "Wenn etwas kaputt geht, bringt es Gl\u00fcck" },
+  { e: "\uD83C\uDFC3 \uD83D\uDE13", a: "Aller Anfang ist schwer", h: "Der Beginn ist immer am schwierigsten" },
+];
+
+var TOTAL = 10;
+var gp = [], ci = 0, sc = 0, hu = false, sa = false, rr = [];
+
+var $ = function(id) { return document.getElementById(id); };
+var roundB = $('roundBadge'), scoreB = $('scoreBadge'), eCard = $('emojiCard'),
+    eDisp = $('emojiDisplay'), hBox = $('hintBox'), hTxt = $('hintText'),
+    aBox = $('answerBox'), aLbl = $('answerLabel'), aTxt = $('answerText'),
+    pEarn = $('pointsEarned'), iRow = $('inputRow'), gInp = $('guessInput'),
+    sBtn = $('submitBtn'), wMsg = $('wrongMsg'), aRow = $('actionRow'),
+    hBtn = $('hintBtn'), gBtn = $('giveupBtn'), nBtn = $('nextBtn'),
+    pRow = $('progressRow'), gScr = $('gameScreen'), goScr = $('gameOverScreen'),
+    goE = $('goEmoji'), goSc = $('goScore'), goM = $('goMsg'),
+    rList = $('resultsList'), paBtn = $('playAgainBtn'), pCnt = $('proverbCount');
+
+function shuf(a) {
+  var b = a.slice();
+  for (var i = b.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = b[i]; b[i] = b[j]; b[j] = t;
+  }
+  return b;
+}
+
+function norm(s) {
+  return s.toLowerCase()
+    .replace(/[\u00e4\u00c4]/g,'a').replace(/[\u00f6\u00d6]/g,'o')
+    .replace(/[\u00fc\u00dc]/g,'u').replace(/\u00df/g,'ss')
+    .replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim();
+}
+
+function chk(input, target) {
+  var ni = norm(input), nt = norm(target);
+  if (ni === nt) return 'exact';
+  var tw = nt.split(' ').filter(function(w){return w.length > 3;}),
+      iw = ni.split(' '),
+      m = tw.filter(function(t){return iw.some(function(i){return i.indexOf(t)>=0 || t.indexOf(i)>=0;});});
+  if (m.length >= Math.ceil(tw.length * 0.5)) return 'close';
+  return 'wrong';
+}
+
+function start() {
+  gp = shuf(P).slice(0, TOTAL);
+  ci = 0; sc = 0; hu = false; sa = false; rr = [];
+  goScr.classList.add('dn');
+  gScr.classList.remove('dn');
+  roundB.classList.remove('dn');
+  pRow.innerHTML = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot'; d.id = 'dot-' + i;
+    pRow.appendChild(d);
+  }
+  render();
+}
+
+function render() {
+  var c = gp[ci];
+  roundB.textContent = (ci+1) + ' / ' + TOTAL;
+  scoreB.textContent = '\u2B50 ' + sc;
+  eDisp.innerHTML = '';
+  var ems = c.e.split(' ');
+  ems.forEach(function(em, i) {
+    var sp = document.createElement('span');
+    sp.className = 'emoji-char';
+    sp.textContent = em;
+    sp.style.animationDelay = (i * 0.08) + 's';
+    eDisp.appendChild(sp);
+  });
+  eCard.classList.add('vis'); eCard.classList.remove('hid');
+  hBox.classList.add('dn'); aBox.classList.add('dn'); pEarn.classList.add('dn');
+  wMsg.classList.add('dn'); nBtn.classList.add('dn');
+  iRow.classList.remove('dn'); aRow.classList.remove('dn'); hBtn.classList.remove('dn');
+  gInp.value = ''; gInp.classList.remove('error');
+  hu = false; sa = false;
+  for (var i = 0; i < TOTAL; i++) {
+    var dot = $('dot-' + i);
+    dot.className = 'dot';
+    if (i < ci) dot.classList.add(rr[i] && rr[i].correct ? 'correct' : 'wrong');
+    else if (i === ci) dot.classList.add('active');
+  }
+  gInp.focus();
+}
+
+function submit() {
+  var g = gInp.value.trim();
+  if (!g || sa) return;
+  var c = gp[ci], r = chk(g, c.a);
+  if (r === 'exact' || r === 'close') {
+    var pts = hu ? 1 : 2;
+    sc += pts; sa = true;
+    rr.push({correct:true, hu:hu, a:c.a});
+    aBox.classList.remove('dn'); aBox.classList.add('correct');
+    aLbl.textContent = '\u2705 Richtig!';
+    aTxt.textContent = c.a;
+    pEarn.textContent = '+' + pts + (pts > 1 ? ' Punkte' : ' Punkt');
+    pEarn.classList.remove('dn');
+    iRow.classList.add('dn'); aRow.classList.add('dn'); wMsg.classList.add('dn');
+    nBtn.classList.remove('dn');
+    nBtn.textContent = ci+1 >= TOTAL ? '\uD83C\uDFC1 Ergebnis anzeigen' : '\u27A1\uFE0F N\u00e4chstes Sprichwort';
+    scoreB.textContent = '\u2B50 ' + sc;
+  } else {
+    wMsg.classList.remove('dn');
+    gInp.classList.add('error');
+    iRow.classList.add('shake');
+    setTimeout(function(){iRow.classList.remove('shake');}, 500);
+  }
+}
+
+function hint() {
+  hTxt.textContent = gp[ci].h;
+  hBox.classList.remove('dn');
+  hBtn.classList.add('dn');
+  hu = true;
+}
+
+function give() {
+  var c = gp[ci]; sa = true;
+  rr.push({correct:false, hu:hu, a:c.a});
+  aBox.classList.remove('dn'); aBox.classList.remove('correct');
+  aLbl.textContent = 'Die Antwort war:';
+  aTxt.textContent = c.a;
+  pEarn.classList.add('dn');
+  iRow.classList.add('dn'); aRow.classList.add('dn'); wMsg.classList.add('dn');
+  nBtn.classList.remove('dn');
+  nBtn.textContent = ci+1 >= TOTAL ? '\uD83C\uDFC1 Ergebnis anzeigen' : '\u27A1\uFE0F N\u00e4chstes Sprichwort';
+}
+
+function next() {
+  if (ci+1 >= TOTAL) { gameover(); return; }
+  ci++; render();
+}
+
+function gameover() {
+  gScr.classList.add('dn'); roundB.classList.add('dn');
+  goScr.classList.remove('dn');
+  var mx = TOTAL * 2, pct = sc / mx;
+  goE.textContent = pct >= 0.8 ? '\uD83C\uDFC6' : pct >= 0.6 ? '\uD83C\uDF1F' : pct >= 0.4 ? '\uD83D\uDC4D' : '\uD83D\uDCAA';
+  goSc.textContent = sc + ' / ' + mx + ' Punkte';
+  goM.textContent = pct >= 0.8 ? 'Hervorragend! Du bist ein Sprichwort-Profi!'
+    : pct >= 0.6 ? 'Sehr gut! Du kennst dich bestens aus!'
+    : pct >= 0.4 ? 'Nicht schlecht! Da geht noch was!'
+    : '\u00dcbung macht den Meister! Versuch\'s nochmal!';
+  rList.innerHTML = '';
+  rr.forEach(function(r, i) {
+    var it = document.createElement('div');
+    it.className = 'result-item';
+    it.style.animationDelay = (i * 0.06) + 's';
+    var icon = r.correct ? (r.hu ? '\uD83D\uDCA1' : '\u2705') : '\u274C';
+    it.innerHTML = '<span class="result-icon">' + icon + '</span><span class="result-text">' + r.a + '</span>';
+    rList.appendChild(it);
+  });
+  scoreB.textContent = '\u2B50 ' + sc;
+  pCnt.textContent = P.length + ' Sprichw\u00f6rter im Pool \u2013 jedes Spiel ist anders!';
+}
+
+sBtn.addEventListener('click', submit);
+gInp.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+gInp.addEventListener('input', function() { gInp.classList.remove('error'); wMsg.classList.add('dn'); });
+hBtn.addEventListener('click', hint);
+gBtn.addEventListener('click', give);
+nBtn.addEventListener('click', next);
+paBtn.addEventListener('click', start);
+
+start();
+</script>
+</body>
+</html>

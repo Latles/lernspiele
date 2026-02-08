@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emoji Sprach-Quiz 🎙️</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.5s;
+    padding: 16px;
+  }
+
+  .bg-default { background: linear-gradient(135deg, #fef9c3, #fce7f3, #e9d5ff); }
+  .bg-correct { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+  .bg-wrong { background: linear-gradient(135deg, #fee2e2, #fed7aa); }
+
+  .card {
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    padding: 32px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+  }
+
+  h1 { font-size: 24px; color: #1f2937; margin-bottom: 4px; }
+  .subtitle { color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+
+  /* Buttons */
+  .btn {
+    border: none; cursor: pointer; font-weight: 700; font-family: inherit;
+    transition: all 0.2s; display: inline-flex; align-items: center;
+    justify-content: center; gap: 6px;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn:active { transform: scale(0.95); }
+
+  .btn-primary {
+    background: #4f46e5; color: white; padding: 12px 24px;
+    border-radius: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(79,70,229,0.3);
+  }
+  .btn-primary:hover { background: #4338ca; }
+
+  .btn-full { width: 100%; padding: 14px; font-size: 18px; border-radius: 16px; }
+
+  .btn-orange {
+    background: #f97316; color: white; padding: 10px 20px;
+    border-radius: 12px; font-size: 14px;
+  }
+  .btn-orange:hover { background: #ea580c; }
+
+  .btn-small {
+    background: #f3f4f6; color: #6b7280; padding: 8px 16px;
+    border-radius: 12px; font-size: 13px;
+  }
+  .btn-small.active { background: #4f46e5; color: white; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+
+  .btn-hint {
+    background: #fbbf24; color: white; padding: 10px 20px;
+    border-radius: 16px; font-size: 14px; box-shadow: 0 3px 10px rgba(251,191,36,0.3);
+  }
+  .btn-hint.used { background: #fef3c7; color: #b45309; box-shadow: none; }
+
+  .btn-link {
+    background: none; color: #9ca3af; font-size: 12px; padding: 4px 8px;
+  }
+  .btn-link:hover { color: #6b7280; transform: none; }
+
+  /* Toggle */
+  .toggle-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; }
+  .toggle {
+    width: 52px; height: 28px; border-radius: 14px; position: relative;
+    cursor: pointer; transition: background 0.2s; border: none;
+  }
+  .toggle.on { background: #22c55e; }
+  .toggle.off { background: #d1d5db; }
+  .toggle-knob {
+    width: 24px; height: 24px; background: white; border-radius: 50%;
+    position: absolute; top: 2px; transition: transform 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+  .toggle.on .toggle-knob { transform: translateX(24px); }
+  .toggle.off .toggle-knob { transform: translateX(2px); }
+
+  /* Round selector */
+  .option-row { display: flex; justify-content: center; gap: 8px; margin: 8px 0; }
+  .round-btn {
+    width: 48px; height: 48px; border-radius: 12px; font-size: 14px; font-weight: 700;
+  }
+
+  /* Label */
+  .label { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-bottom: 6px; }
+
+  /* Emoji display */
+  .emoji-display {
+    font-size: 120px; line-height: 1.2; padding: 16px 0; user-select: none;
+  }
+  @media (min-width: 400px) { .emoji-display { font-size: 140px; } }
+
+  .question { color: #6b7280; font-size: 16px; margin-bottom: 4px; }
+
+  /* Mic button */
+  .mic-btn {
+    width: 80px; height: 80px; border-radius: 50%; border: none;
+    font-size: 32px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+  }
+  .mic-btn.ready {
+    background: #4f46e5; color: white;
+    box-shadow: 0 6px 20px rgba(79,70,229,0.35);
+  }
+  .mic-btn.ready:hover { background: #4338ca; transform: scale(1.1); }
+  .mic-btn.ready:active { transform: scale(0.95); }
+  .mic-btn.recording {
+    background: #ef4444; color: white;
+    box-shadow: 0 6px 20px rgba(239,68,68,0.35);
+    animation: pulse-ring 1.5s infinite;
+  }
+
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    70% { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  .bounce { animation: bounce 0.6s ease 2; }
+
+  /* Progress bar */
+  .progress-track {
+    width: 100%; height: 10px; background: #f3f4f6;
+    border-radius: 5px; overflow: hidden; margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 5px; transition: width 0.5s;
+    background: linear-gradient(90deg, #818cf8, #a78bfa);
+  }
+
+  /* Header row */
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .score { font-size: 14px; font-weight: 700; color: #4f46e5; }
+  .counter { font-size: 14px; color: #9ca3af; font-weight: 500; }
+
+  /* Result */
+  .result-icon { font-size: 56px; margin-bottom: 8px; }
+  .result-text { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .result-text.correct { color: #16a34a; }
+  .result-text.wrong { color: #dc2626; }
+  .transcript { color: #6b7280; font-size: 14px; margin-bottom: 4px; }
+  .answer-reveal { color: #6b7280; font-size: 14px; }
+  .answer-reveal strong { color: #1f2937; }
+  .actions { display: flex; gap: 12px; justify-content: center; margin-top: 12px; }
+
+  /* Hint area */
+  .hint-area { margin-bottom: 16px; }
+  .hint-word { font-size: 12px; color: #b45309; margin-top: 6px; font-weight: 500; }
+
+  /* Helper text */
+  .helper { color: #9ca3af; font-size: 13px; margin-top: 16px; }
+  .helper.error { color: #f97316; }
+
+  /* Dots */
+  .dots { display: flex; justify-content: center; gap: 4px; margin: 8px 0; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.green { background: #86efac; }
+  .dot.red { background: #fca5a5; }
+
+  /* Game over */
+  .big-score { font-size: 48px; font-weight: 900; color: #4f46e5; margin: 8px 0; }
+  .pct { color: #6b7280; margin-bottom: 8px; }
+  .hints-info { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+
+  .section { margin-bottom: 16px; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body class="bg-default">
+
+<div class="card" id="app"></div>
+
+<script>
+const QUIZ_ITEMS = [
+  { emoji: "🏠", answers: ["haus", "house"], label: "Haus", labelEn: "House" },
+  { emoji: "🌳", answers: ["baum", "tree"], label: "Baum", labelEn: "Tree" },
+  { emoji: "☀️", answers: ["sonne", "sun"], label: "Sonne", labelEn: "Sun" },
+  { emoji: "🐱", answers: ["katze", "cat"], label: "Katze", labelEn: "Cat" },
+  { emoji: "🚗", answers: ["auto", "car", "wagen"], label: "Auto", labelEn: "Car" },
+  { emoji: "🍎", answers: ["apfel", "apple"], label: "Apfel", labelEn: "Apple" },
+  { emoji: "⭐", answers: ["stern", "star"], label: "Stern", labelEn: "Star" },
+  { emoji: "🐶", answers: ["hund", "dog"], label: "Hund", labelEn: "Dog" },
+  { emoji: "🌙", answers: ["mond", "moon"], label: "Mond", labelEn: "Moon" },
+  { emoji: "🐟", answers: ["fisch", "fish"], label: "Fisch", labelEn: "Fish" },
+  { emoji: "🔥", answers: ["feuer", "fire"], label: "Feuer", labelEn: "Fire" },
+  { emoji: "💧", answers: ["wasser", "water", "tropfen"], label: "Wasser", labelEn: "Water" },
+  { emoji: "🎵", answers: ["musik", "music", "note"], label: "Musik", labelEn: "Music" },
+  { emoji: "❤️", answers: ["herz", "heart", "liebe"], label: "Herz", labelEn: "Heart" },
+  { emoji: "🌈", answers: ["regenbogen", "rainbow"], label: "Regenbogen", labelEn: "Rainbow" },
+  { emoji: "🍕", answers: ["pizza"], label: "Pizza", labelEn: "Pizza" },
+  { emoji: "✈️", answers: ["flugzeug", "airplane", "flieger"], label: "Flugzeug", labelEn: "Airplane" },
+  { emoji: "📖", answers: ["buch", "book"], label: "Buch", labelEn: "Book" },
+  { emoji: "🐦", answers: ["vogel", "bird"], label: "Vogel", labelEn: "Bird" },
+  { emoji: "🌺", answers: ["blume", "flower"], label: "Blume", labelEn: "Flower" },
+  { emoji: "🎈", answers: ["ballon", "balloon", "luftballon"], label: "Ballon", labelEn: "Balloon" },
+  { emoji: "🍌", answers: ["banane", "banana"], label: "Banane", labelEn: "Banana" },
+  { emoji: "🐸", answers: ["frosch", "frog"], label: "Frosch", labelEn: "Frog" },
+  { emoji: "🦋", answers: ["schmetterling", "butterfly"], label: "Schmetterling", labelEn: "Butterfly" },
+];
+
+// --- State ---
+let state = {
+  screen: "menu", // menu | game | gameover
+  language: "de-DE",
+  kidMode: true,
+  numRounds: 10,
+  items: [],
+  currentIndex: 0,
+  score: 0,
+  hintsUsed: 0,
+  hintShown: false,
+  status: "idle", // idle | listening | correct | wrong
+  transcript: "",
+  results: [], // array of true/false per round
+};
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const hasSpeechRecognition = !!SpeechRecognition;
+const hasSpeechSynthesis = !!window.speechSynthesis;
+
+// --- Helpers ---
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function isDE() { return state.language === "de-DE"; }
+function currentItem() { return state.items[state.currentIndex]; }
+
+function speakWord(word, lang) {
+  if (!hasSpeechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = lang;
+  u.rate = 0.8;
+  u.pitch = 1.1;
+  speechSynthesis.speak(u);
+}
+
+function speakPraise() {
+  if (!state.kidMode) return;
+  const praise = isDE()
+    ? ["Super!", "Toll gemacht!", "Bravo!", "Klasse!", "Perfekt!", "Wunderbar!"]
+    : ["Great job!", "Awesome!", "Well done!", "Perfect!", "Amazing!"];
+  const word = praise[Math.floor(Math.random() * praise.length)];
+  setTimeout(() => speakWord(word, state.language), 400);
+}
+
+function setBg(type) {
+  document.body.className = "bg-" + type;
+}
+
+// --- Render ---
+const app = document.getElementById("app");
+
+function render() {
+  if (state.screen === "menu") renderMenu();
+  else if (state.screen === "game") renderGame();
+  else if (state.screen === "gameover") renderGameOver();
+}
+
+function renderMenu() {
+  setBg("default");
+  const de = isDE();
+  app.innerHTML = `
+    <div style="font-size:56px; margin-bottom:12px;">🎙️ 🎮</div>
+    <h1>${de ? "Emoji Sprach-Quiz" : "Emoji Speech Quiz"}</h1>
+    <p class="subtitle">${de ? "Sieh dir das Emoji an und sag das Wort laut!" : "Look at the emoji and say the word out loud!"}</p>
+
+    <div class="section">
+      <div class="label">${de ? "Sprache" : "Language"}</div>
+      <div class="option-row">
+        <button class="btn btn-small ${state.language === 'de-DE' ? 'active' : ''}" onclick="setLang('de-DE')">🇩🇪 Deutsch</button>
+        <button class="btn btn-small ${state.language === 'en-US' ? 'active' : ''}" onclick="setLang('en-US')">🇬🇧 English</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="label">${de ? "Anzahl Runden" : "Number of Rounds"}</div>
+      <div class="option-row">
+        ${[5, 10, 15, 24].map(n => `
+          <button class="btn btn-small round-btn ${state.numRounds === n ? 'active' : ''}" onclick="setRounds(${n})">${n}</button>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <span style="font-size:14px; color:#4b5563;">${de ? "Kinder-Modus" : "Kid Mode"}</span>
+      <button class="toggle ${state.kidMode ? 'on' : 'off'}" onclick="toggleKidMode()">
+        <div class="toggle-knob"></div>
+      </button>
+      <span style="font-size:20px;">${state.kidMode ? "🧸" : "🎓"}</span>
+    </div>
+    <p style="font-size:12px; color:#9ca3af; margin-bottom:20px;">
+      ${state.kidMode
+        ? (de ? "Mit Hilfe-Button 🔊 & Lob-Stimme" : "With hint button 🔊 & spoken praise")
+        : (de ? "Ohne Hilfe — für Fortgeschrittene" : "No hints — for advanced players")}
+    </p>
+
+    ${!hasSpeechRecognition ? `
+      <div style="background:#fef2f2; border-radius:12px; padding:16px; margin-bottom:16px;">
+        <div style="font-size:32px; margin-bottom:8px;">🎙️❌</div>
+        <p style="color:#dc2626; font-size:14px; font-weight:600;">${de ? "Spracherkennung nicht verfügbar" : "Speech recognition not available"}</p>
+        <p style="color:#9ca3af; font-size:12px;">${de ? "Bitte verwende Chrome oder Edge." : "Please use Chrome or Edge."}</p>
+      </div>
+    ` : `
+      <button class="btn btn-primary btn-full" onclick="startGame()">
+        🚀 ${de ? "Los geht's!" : "Let's go!"}
+      </button>
+    `}
+  `;
+}
+
+function renderGame() {
+  const item = currentItem();
+  const de = isDE();
+  const total = state.items.length;
+  const pct = (state.currentIndex / total) * 100;
+
+  if (state.status === "correct") setBg("correct");
+  else if (state.status === "wrong") setBg("wrong");
+  else setBg("default");
+
+  let content = "";
+
+  // Header
+  content += `
+    <div class="header">
+      <button class="btn btn-link" onclick="backToMenu()">← ${de ? "Menü" : "Menu"}</button>
+      <span class="counter">${state.currentIndex + 1} / ${total}</span>
+      <span class="score">⭐ ${state.score}</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" style="width:${pct}%"></div>
+    </div>
+    <p class="question">${de ? "Was ist das?" : "What is this?"}</p>
+    <div class="emoji-display">${item.emoji}</div>
+  `;
+
+  // Hint button (kid mode)
+  if (state.kidMode && state.status !== "correct") {
+    if (state.hintShown) {
+      content += `
+        <div class="hint-area">
+          <button class="btn btn-hint used" onclick="playHint()">🔊 ${de ? "Nochmal hören" : "Hear again"}</button>
+          <div class="hint-word">„${de ? item.label : item.labelEn}"</div>
+        </div>
+      `;
+    } else {
+      content += `
+        <div class="hint-area">
+          <button class="btn btn-hint" onclick="playHint()">💡 ${de ? "Hilfe — Wort anhören" : "Help — hear the word"}</button>
+        </div>
+      `;
+    }
+  }
+
+  // Status-specific content
+  if (state.status === "idle") {
+    content += `
+      <button class="mic-btn ready" onclick="startListening()">🎙️</button>
+      <p class="helper">${state.transcript
+        ? `<span class="error">${state.transcript}</span>`
+        : (state.kidMode
+          ? (de ? "Drücke 💡 für Hilfe oder 🎙️ zum Sprechen!" : "Press 💡 for help or 🎙️ to speak!")
+          : (de ? "Drücke den Mikrofon-Button und sag das Wort!" : "Press the mic button and say the word!"))
+      }</p>
+    `;
+  } else if (state.status === "listening") {
+    content += `
+      <div class="mic-btn recording">🎙️</div>
+      <p style="color:#ef4444; font-weight:500; font-size:14px; margin-top:12px;">
+        ${de ? "Ich höre zu..." : "Listening..."}
+      </p>
+    `;
+  } else if (state.status === "correct") {
+    content += `
+      <div class="result-icon bounce">✅</div>
+      <div class="result-text correct">${de ? "Richtig! 🎉" : "Correct! 🎉"}</div>
+      ${state.transcript ? `<p class="transcript">${de ? "Du hast gesagt" : "You said"}: <strong>"${state.transcript}"</strong></p>` : ""}
+      <div class="actions">
+        <button class="btn btn-primary" onclick="nextRound()">${de ? "Weiter" : "Next"} ➡️</button>
+      </div>
+    `;
+  } else if (state.status === "wrong") {
+    content += `
+      <div class="result-icon">❌</div>
+      <div class="result-text wrong">${de ? "Nicht ganz..." : "Not quite..."}</div>
+      ${state.transcript ? `<p class="transcript">${de ? "Du hast gesagt" : "You said"}: <strong>"${state.transcript}"</strong></p>` : ""}
+      <p class="answer-reveal">${de ? "Die Antwort war" : "The answer was"}: <strong>${de ? item.label : item.labelEn}</strong></p>
+      <div class="actions">
+        <button class="btn btn-orange" onclick="retry()">🔄 ${de ? "Nochmal" : "Retry"}</button>
+        <button class="btn btn-primary" onclick="nextRound()">${de ? "Weiter" : "Next"} ➡️</button>
+      </div>
+    `;
+  }
+
+  app.innerHTML = content;
+}
+
+function renderGameOver() {
+  setBg("default");
+  const de = isDE();
+  const total = state.items.length;
+  const pct = Math.round((state.score / total) * 100);
+  const emoji = pct === 100 ? "🏆" : pct >= 70 ? "🎉" : pct >= 40 ? "👍" : "💪";
+
+  let dots = "";
+  for (let i = 0; i < state.results.length; i++) {
+    dots += `<div class="dot ${state.results[i] ? 'green' : 'red'}"></div>`;
+  }
+
+  app.innerHTML = `
+    <div style="font-size:72px; margin-bottom:8px;">${emoji}</div>
+    <h1>${de ? "Spiel vorbei!" : "Game Over!"}</h1>
+    <div class="big-score">${state.score} / ${total}</div>
+    <div class="dots">${dots}</div>
+    <p class="pct">${pct}% ${de ? "richtig" : "correct"}</p>
+    ${state.hintsUsed > 0 ? `<p class="hints-info">🔊 ${state.hintsUsed} ${de ? "Hilfen benutzt" : "hints used"}</p>` : ""}
+    <button class="btn btn-primary btn-full" onclick="backToMenu()">🔄 ${de ? "Nochmal spielen" : "Play again"}</button>
+  `;
+}
+
+// --- Actions ---
+function setLang(lang) { state.language = lang; render(); }
+function setRounds(n) { state.numRounds = n; render(); }
+function toggleKidMode() { state.kidMode = !state.kidMode; render(); }
+
+function startGame() {
+  state.items = shuffle(QUIZ_ITEMS).slice(0, state.numRounds);
+  state.currentIndex = 0;
+  state.score = 0;
+  state.hintsUsed = 0;
+  state.hintShown = false;
+  state.status = "idle";
+  state.transcript = "";
+  state.results = [];
+  state.screen = "game";
+  render();
+}
+
+function backToMenu() {
+  state.screen = "menu";
+  render();
+}
+
+function playHint() {
+  const item = currentItem();
+  const word = isDE() ? item.label : item.labelEn;
+  speakWord(word, state.language);
+  if (!state.hintShown) {
+    state.hintsUsed++;
+    state.hintShown = true;
+  }
+  render();
+}
+
+function startListening() {
+  if (!hasSpeechRecognition) return;
+  const recognition = new SpeechRecognition();
+  recognition.lang = state.language;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 5;
+
+  recognition.onstart = () => {
+    state.status = "listening";
+    state.transcript = "";
+    render();
+  };
+
+  recognition.onresult = (event) => {
+    const results = event.results[0];
+    let allTranscripts = [];
+    for (let i = 0; i < results.length; i++) {
+      allTranscripts.push(results[i].transcript.toLowerCase().trim());
+    }
+    state.transcript = allTranscripts[0] || "";
+
+    const item = currentItem();
+    const correct = allTranscripts.some(t =>
+      item.answers.some(a => t.includes(a) || a.includes(t))
+    );
+
+    if (correct) {
+      state.status = "correct";
+      state.score++;
+      state.results.push(true);
+      speakPraise();
+    } else {
+      state.status = "wrong";
+      state.results.push(false);
+    }
+    render();
+  };
+
+  recognition.onerror = (event) => {
+    const de = isDE();
+    if (event.error === "no-speech") {
+      state.transcript = de ? "Kein Ton erkannt. Versuch es nochmal!" : "No sound detected. Try again!";
+    } else {
+      state.transcript = "Error: " + event.error;
+    }
+    state.status = "idle";
+    render();
+  };
+
+  recognition.start();
+}
+
+function retry() {
+  // Remove last result since they're retrying
+  state.results.pop();
+  state.status = "idle";
+  state.transcript = "";
+  render();
+}
+
+function nextRound() {
+  const next = state.currentIndex + 1;
+  if (next >= state.items.length) {
+    state.screen = "gameover";
+  } else {
+    state.currentIndex = next;
+    state.status = "idle";
+    state.transcript = "";
+    state.hintShown = false;
+  }
+  render();
+}
+
+// --- Init ---
+render();
+</script>
+</body>
+</html>
