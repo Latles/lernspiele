@@ -3,26 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🏴 Flaggen-Charade</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>🏴 Flaggen-Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1923;
-    --card: #1a2a3a;
-    --card-hover: #243546;
-    --accent: #f0c040;
-    --accent-glow: rgba(240, 192, 64, 0.25);
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card: #16213e;
+    --card-hover: #1e2d45;
+    --accent: #f59e0b;
+    --accent-glow: rgba(245, 158, 11, 0.25);
     --green: #34d399;
     --red: #f87171;
-    --text: #e8edf2;
-    --text-dim: #8899aa;
+    --text: #f0f0f0;
+    --text-dim: #a0a0b8;
     --radius: 16px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Nunito', sans-serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -36,9 +37,9 @@
   .bg-pattern {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background:
-      radial-gradient(ellipse at 20% 50%, rgba(240,192,64,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 20% 50%, rgba(245,158,11,0.06) 0%, transparent 60%),
       radial-gradient(ellipse at 80% 20%, rgba(52,211,153,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(248,113,113,0.03) 0%, transparent 50%);
+      radial-gradient(ellipse at 50% 80%, rgba(233,69,96,0.03) 0%, transparent 50%);
   }
 
   #app {
@@ -50,11 +51,34 @@
     justify-content: center; align-items: center;
   }
 
-  /* When result screen is shown, allow scrolling */
   #app:has(.result-screen) {
     justify-content: flex-start;
     padding-top: 40px;
     padding-bottom: 40px;
+  }
+
+  /* ─── BACK BUTTON ─── */
+  .back-btn {
+    position: fixed;
+    top: 16px; left: 16px;
+    z-index: 10;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 8px 16px;
+    color: var(--text-dim);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .back-btn:hover {
+    background: var(--card-hover);
+    color: var(--text);
   }
 
   /* ─── START SCREEN ─── */
@@ -63,15 +87,23 @@
     animation: fadeUp 0.6s ease;
   }
 
+  .start-emoji {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 16px;
+    animation: bounce 2s ease infinite;
+  }
+
   .start-screen h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fredoka', sans-serif;
     font-size: 2.8rem;
-    font-weight: 900;
+    font-weight: 700;
     line-height: 1.1;
     margin-bottom: 8px;
     background: linear-gradient(135deg, var(--accent), #fde68a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .start-screen .subtitle {
@@ -80,45 +112,128 @@
     margin-bottom: 48px;
   }
 
-  .mode-label {
-    font-size: 0.8rem;
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), #fde68a);
+    border: none;
+    border-radius: var(--radius);
+    padding: 16px 48px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--bg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .start-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+  }
+
+  /* ─── CONTINENT SELECTION ─── */
+  .continent-screen {
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .continent-screen h2 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.8rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+
+  .continent-screen .sub {
     color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .continent-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     margin-bottom: 20px;
   }
 
-  .mode-buttons {
-    display: flex; gap: 16px;
-    justify-content: center;
-  }
-
-  .mode-btn {
+  .continent-btn {
     background: var(--card);
     border: 2px solid transparent;
     border-radius: var(--radius);
-    padding: 28px 36px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-align: center;
+    user-select: none;
+    color: var(--text);
+  }
+
+  .continent-btn.selected {
+    border-color: var(--accent);
+    background: rgba(245, 158, 11, 0.1);
+  }
+
+  .continent-btn:hover {
+    background: var(--card-hover);
+  }
+
+  .continent-btn .c-icon { font-size: 1.8rem; margin-bottom: 4px; }
+  .continent-btn .c-name { font-family: 'Fredoka', sans-serif; font-size: 1rem; font-weight: 600; }
+  .continent-btn .c-count { font-size: 0.75rem; color: var(--text-dim); }
+
+  .continent-info {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .continent-info span { color: var(--accent); }
+
+  .continent-actions {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+
+  .go-btn {
+    background: linear-gradient(135deg, var(--accent), #fde68a);
+    border: none;
+    border-radius: var(--radius);
+    padding: 14px 40px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--bg);
     cursor: pointer;
     transition: all 0.3s ease;
-    text-align: center;
-    min-width: 200px;
   }
 
-  .mode-btn:hover {
+  .go-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px var(--accent-glow);
+  }
+
+  .go-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .toggle-all-btn {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius);
+    padding: 14px 24px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .toggle-all-btn:hover {
     background: var(--card-hover);
-    border-color: var(--accent);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px var(--accent);
+    color: var(--text);
   }
-
-  .mode-btn .icon { font-size: 2rem; margin-bottom: 12px; }
-  .mode-btn .label {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.3rem; font-weight: 700; color: var(--text);
-    margin-bottom: 4px;
-  }
-  .mode-btn .desc { font-size: 0.8rem; color: var(--text-dim); }
 
   /* ─── QUIZ SCREEN ─── */
   .quiz-screen {
@@ -131,7 +246,7 @@
     margin-bottom: 12px;
   }
 
-  .quiz-header .mode-tag {
+  .quiz-header .round-tag {
     font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
     letter-spacing: 2px; color: var(--accent);
     background: var(--accent-glow);
@@ -147,7 +262,7 @@
     width: 100%; height: 6px;
     background: var(--card);
     border-radius: 100px;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
     overflow: hidden;
   }
 
@@ -164,17 +279,40 @@
     margin-bottom: 8px; font-weight: 600;
   }
 
-  .flag-display {
+  .flag-container {
+    position: relative;
     text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .flag-display {
     font-size: 8rem;
     line-height: 1;
-    margin-bottom: 40px;
     animation: popIn 0.4s ease;
     filter: drop-shadow(0 8px 30px rgba(0,0,0,0.3));
     user-select: none;
   }
 
-  /* Easy mode: multiple choice */
+  .hint-btn {
+    position: absolute;
+    bottom: -4px; right: calc(50% - 100px);
+    background: var(--surface);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+    width: 44px; height: 44px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .hint-btn:hover {
+    border-color: var(--accent);
+    background: var(--card-hover);
+    transform: scale(1.1);
+  }
+
+  /* Choices */
   .choices {
     display: flex; flex-direction: column; gap: 12px;
   }
@@ -183,14 +321,17 @@
     background: var(--card);
     border: 2px solid transparent;
     border-radius: var(--radius);
-    padding: 18px 24px;
-    font-family: 'DM Sans', sans-serif;
+    padding: 16px 20px;
+    font-family: 'Nunito', sans-serif;
     font-size: 1.05rem;
     font-weight: 600;
     color: var(--text);
     cursor: pointer;
     transition: all 0.25s ease;
     text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .choice-btn:hover:not(.disabled) {
@@ -214,61 +355,82 @@
   .choice-btn.disabled { pointer-events: none; opacity: 0.5; }
   .choice-btn.correct.disabled { opacity: 1; }
 
-  /* Hard mode: text input */
-  .input-area {
-    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  .key-hint {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 26px; height: 26px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    flex-shrink: 0;
   }
 
-  .text-input {
-    width: 100%;
-    background: var(--card);
-    border: 2px solid transparent;
-    border-radius: var(--radius);
-    padding: 18px 24px;
-    font-family: 'DM Sans', sans-serif;
+  @media (hover: none) {
+    .key-hint { display: none; }
+  }
+
+  /* ─── HINT MODAL ─── */
+  .hint-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  .hint-modal {
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    animation: popIn 0.3s ease;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .hint-modal h3 {
+    font-family: 'Fredoka', sans-serif;
     font-size: 1.1rem;
+    margin-bottom: 4px;
+    color: var(--text-dim);
+  }
+
+  .hint-continent-name {
+    color: var(--accent);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+
+  .hint-modal svg {
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    margin: 0 auto 20px;
+    display: block;
+  }
+
+  .hint-close {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 10px 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text);
-    outline: none;
-    transition: all 0.3s ease;
-    text-align: center;
-  }
-
-  .text-input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 4px var(--accent-glow);
-  }
-
-  .text-input::placeholder { color: var(--text-dim); font-weight: 400; }
-
-  .submit-btn {
-    background: linear-gradient(135deg, var(--accent), #fde68a);
-    border: none;
-    border-radius: var(--radius);
-    padding: 14px 48px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--bg);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
   }
 
-  .submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px var(--accent-glow);
+  .hint-close:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
   }
-
-  .feedback {
-    text-align: center;
-    font-size: 1rem; font-weight: 600;
-    margin-top: 16px;
-    min-height: 28px;
-    animation: fadeUp 0.3s ease;
-  }
-
-  .feedback.correct-fb { color: var(--green); }
-  .feedback.wrong-fb { color: var(--red); }
 
   /* ─── RESULT SCREEN ─── */
   .result-screen {
@@ -279,17 +441,18 @@
   .result-screen .trophy { font-size: 5rem; margin-bottom: 16px; }
 
   .result-screen h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem; font-weight: 900;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.2rem; font-weight: 700;
     margin-bottom: 8px;
   }
 
   .result-screen .result-score {
-    font-size: 3.5rem; font-weight: 900;
-    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem; font-weight: 700;
+    font-family: 'Fredoka', sans-serif;
     background: linear-gradient(135deg, var(--accent), #fde68a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 16px 0;
   }
 
@@ -316,12 +479,16 @@
   .result-row .r-name { flex: 1; text-align: left; font-weight: 500; }
   .result-row .r-icon { font-size: 1.2rem; }
 
+  .result-actions {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  }
+
   .restart-btn {
     background: var(--card);
     border: 2px solid var(--accent);
     border-radius: var(--radius);
-    padding: 16px 48px;
-    font-family: 'DM Sans', sans-serif;
+    padding: 14px 32px;
+    font-family: 'Nunito', sans-serif;
     font-size: 1rem; font-weight: 700;
     color: var(--accent);
     cursor: pointer;
@@ -335,10 +502,33 @@
     box-shadow: 0 8px 24px var(--accent-glow);
   }
 
+  .region-btn {
+    background: var(--card);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius);
+    padding: 14px 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .region-btn:hover {
+    background: var(--card-hover);
+    color: var(--text);
+    transform: translateY(-2px);
+  }
+
   /* ─── ANIMATIONS ─── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes popIn {
@@ -347,65 +537,86 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
   @media (max-width: 500px) {
     .start-screen h1 { font-size: 2rem; }
-    .mode-buttons { flex-direction: column; }
-    .mode-btn { min-width: unset; }
     .flag-display { font-size: 6rem; }
+    .continent-grid { grid-template-columns: repeat(2, 1fr); }
+    .hint-btn { right: calc(50% - 80px); }
   }
 </style>
 </head>
 <body>
 <div class="bg-pattern"></div>
+<a class="back-btn" href="index.html">← Zurück</a>
 <div id="app"></div>
 
 <script>
+// ─── DATA ───
+// [flag, name, continent]
+// EU=Europa, AS=Asien, AF=Afrika, NA=Nordamerika, SA=Südamerika, OZ=Ozeanien
 const ALL_COUNTRIES = [
-  ["🇦🇫","Afghanistan"],["🇦🇱","Albanien"],["🇩🇿","Algerien"],["🇦🇩","Andorra"],["🇦🇴","Angola"],
-  ["🇦🇬","Antigua und Barbuda"],["🇦🇷","Argentinien"],["🇦🇲","Armenien"],["🇦🇺","Australien"],["🇦🇹","Österreich"],
-  ["🇦🇿","Aserbaidschan"],["🇧🇸","Bahamas"],["🇧🇭","Bahrain"],["🇧🇩","Bangladesch"],["🇧🇧","Barbados"],
-  ["🇧🇾","Belarus"],["🇧🇪","Belgien"],["🇧🇿","Belize"],["🇧🇯","Benin"],["🇧🇹","Bhutan"],
-  ["🇧🇴","Bolivien"],["🇧🇦","Bosnien und Herzegowina"],["🇧🇼","Botswana"],["🇧🇷","Brasilien"],["🇧🇳","Brunei"],
-  ["🇧🇬","Bulgarien"],["🇧🇫","Burkina Faso"],["🇧🇮","Burundi"],["🇰🇭","Kambodscha"],["🇨🇲","Kamerun"],
-  ["🇨🇦","Kanada"],["🇨🇻","Kap Verde"],["🇨🇫","Zentralafrikanische Republik"],["🇹🇩","Tschad"],["🇨🇱","Chile"],
-  ["🇨🇳","China"],["🇨🇴","Kolumbien"],["🇰🇲","Komoren"],["🇨🇬","Republik Kongo"],["🇨🇩","Demokratische Republik Kongo"],
-  ["🇨🇷","Costa Rica"],["🇭🇷","Kroatien"],["🇨🇺","Kuba"],["🇨🇾","Zypern"],["🇨🇿","Tschechien"],
-  ["🇩🇰","Dänemark"],["🇩🇯","Dschibuti"],["🇩🇲","Dominica"],["🇩🇴","Dominikanische Republik"],["🇪🇨","Ecuador"],
-  ["🇪🇬","Ägypten"],["🇸🇻","El Salvador"],["🇬🇶","Äquatorialguinea"],["🇪🇷","Eritrea"],["🇪🇪","Estland"],
-  ["🇸🇿","Eswatini"],["🇪🇹","Äthiopien"],["🇫🇯","Fidschi"],["🇫🇮","Finnland"],["🇫🇷","Frankreich"],
-  ["🇬🇦","Gabun"],["🇬🇲","Gambia"],["🇬🇪","Georgien"],["🇩🇪","Deutschland"],["🇬🇭","Ghana"],
-  ["🇬🇷","Griechenland"],["🇬🇩","Grenada"],["🇬🇹","Guatemala"],["🇬🇳","Guinea"],["🇬🇼","Guinea-Bissau"],
-  ["🇬🇾","Guyana"],["🇭🇹","Haiti"],["🇭🇳","Honduras"],["🇭🇺","Ungarn"],["🇮🇸","Island"],
-  ["🇮🇳","Indien"],["🇮🇩","Indonesien"],["🇮🇷","Iran"],["🇮🇶","Irak"],["🇮🇪","Irland"],
-  ["🇮🇱","Israel"],["🇮🇹","Italien"],["🇨🇮","Elfenbeinküste"],["🇯🇲","Jamaika"],["🇯🇵","Japan"],
-  ["🇯🇴","Jordanien"],["🇰🇿","Kasachstan"],["🇰🇪","Kenia"],["🇰🇮","Kiribati"],["🇰🇵","Nordkorea"],
-  ["🇰🇷","Südkorea"],["🇰🇼","Kuwait"],["🇰🇬","Kirgisistan"],["🇱🇦","Laos"],["🇱🇻","Lettland"],
-  ["🇱🇧","Libanon"],["🇱🇸","Lesotho"],["🇱🇷","Liberia"],["🇱🇾","Libyen"],["🇱🇮","Liechtenstein"],
-  ["🇱🇹","Litauen"],["🇱🇺","Luxemburg"],["🇲🇬","Madagaskar"],["🇲🇼","Malawi"],["🇲🇾","Malaysia"],
-  ["🇲🇻","Malediven"],["🇲🇱","Mali"],["🇲🇹","Malta"],["🇲🇭","Marshallinseln"],["🇲🇷","Mauretanien"],
-  ["🇲🇺","Mauritius"],["🇲🇽","Mexiko"],["🇫🇲","Mikronesien"],["🇲🇩","Moldau"],["🇲🇨","Monaco"],
-  ["🇲🇳","Mongolei"],["🇲🇪","Montenegro"],["🇲🇦","Marokko"],["🇲🇿","Mosambik"],["🇲🇲","Myanmar"],
-  ["🇳🇦","Namibia"],["🇳🇷","Nauru"],["🇳🇵","Nepal"],["🇳🇱","Niederlande"],["🇳🇿","Neuseeland"],
-  ["🇳🇮","Nicaragua"],["🇳🇪","Niger"],["🇳🇬","Nigeria"],["🇲🇰","Nordmazedonien"],["🇳🇴","Norwegen"],
-  ["🇴🇲","Oman"],["🇵🇰","Pakistan"],["🇵🇼","Palau"],["🇵🇸","Palästina"],["🇵🇦","Panama"],
-  ["🇵🇬","Papua-Neuguinea"],["🇵🇾","Paraguay"],["🇵🇪","Peru"],["🇵🇭","Philippinen"],["🇵🇱","Polen"],
-  ["🇵🇹","Portugal"],["🇶🇦","Katar"],["🇷🇴","Rumänien"],["🇷🇺","Russland"],["🇷🇼","Ruanda"],
-  ["🇰🇳","St. Kitts und Nevis"],["🇱🇨","St. Lucia"],["🇻🇨","St. Vincent und die Grenadinen"],
-  ["🇼🇸","Samoa"],["🇸🇲","San Marino"],["🇸🇹","São Tomé und Príncipe"],["🇸🇦","Saudi-Arabien"],
-  ["🇸🇳","Senegal"],["🇷🇸","Serbien"],["🇸🇨","Seychellen"],["🇸🇱","Sierra Leone"],["🇸🇬","Singapur"],
-  ["🇸🇰","Slowakei"],["🇸🇮","Slowenien"],["🇸🇧","Salomonen"],["🇸🇴","Somalia"],["🇿🇦","Südafrika"],
-  ["🇸🇸","Südsudan"],["🇪🇸","Spanien"],["🇱🇰","Sri Lanka"],["🇸🇩","Sudan"],["🇸🇷","Suriname"],
-  ["🇸🇪","Schweden"],["🇨🇭","Schweiz"],["🇸🇾","Syrien"],["🇹🇼","Taiwan"],["🇹🇯","Tadschikistan"],
-  ["🇹🇿","Tansania"],["🇹🇭","Thailand"],["🇹🇱","Osttimor"],["🇹🇬","Togo"],["🇹🇴","Tonga"],
-  ["🇹🇹","Trinidad und Tobago"],["🇹🇳","Tunesien"],["🇹🇷","Türkei"],["🇹🇲","Turkmenistan"],["🇹🇻","Tuvalu"],
-  ["🇺🇬","Uganda"],["🇺🇦","Ukraine"],["🇦🇪","Vereinigte Arabische Emirate"],["🇬🇧","Vereinigtes Königreich"],
-  ["🇺🇸","Vereinigte Staaten"],["🇺🇾","Uruguay"],["🇺🇿","Usbekistan"],["🇻🇺","Vanuatu"],
-  ["🇻🇦","Vatikanstadt"],["🇻🇪","Venezuela"],["🇻🇳","Vietnam"],["🇾🇪","Jemen"],["🇿🇲","Sambia"],["🇿🇼","Simbabwe"]
+  ["🇦🇫","Afghanistan","AS"],["🇦🇱","Albanien","EU"],["🇩🇿","Algerien","AF"],["🇦🇩","Andorra","EU"],["🇦🇴","Angola","AF"],
+  ["🇦🇬","Antigua und Barbuda","NA"],["🇦🇷","Argentinien","SA"],["🇦🇲","Armenien","AS"],["🇦🇺","Australien","OZ"],["🇦🇹","Österreich","EU"],
+  ["🇦🇿","Aserbaidschan","AS"],["🇧🇸","Bahamas","NA"],["🇧🇭","Bahrain","AS"],["🇧🇩","Bangladesch","AS"],["🇧🇧","Barbados","NA"],
+  ["🇧🇾","Belarus","EU"],["🇧🇪","Belgien","EU"],["🇧🇿","Belize","NA"],["🇧🇯","Benin","AF"],["🇧🇹","Bhutan","AS"],
+  ["🇧🇴","Bolivien","SA"],["🇧🇦","Bosnien und Herzegowina","EU"],["🇧🇼","Botswana","AF"],["🇧🇷","Brasilien","SA"],["🇧🇳","Brunei","AS"],
+  ["🇧🇬","Bulgarien","EU"],["🇧🇫","Burkina Faso","AF"],["🇧🇮","Burundi","AF"],["🇰🇭","Kambodscha","AS"],["🇨🇲","Kamerun","AF"],
+  ["🇨🇦","Kanada","NA"],["🇨🇻","Kap Verde","AF"],["🇨🇫","Zentralafrikanische Republik","AF"],["🇹🇩","Tschad","AF"],["🇨🇱","Chile","SA"],
+  ["🇨🇳","China","AS"],["🇨🇴","Kolumbien","SA"],["🇰🇲","Komoren","AF"],["🇨🇬","Republik Kongo","AF"],["🇨🇩","Demokratische Republik Kongo","AF"],
+  ["🇨🇷","Costa Rica","NA"],["🇭🇷","Kroatien","EU"],["🇨🇺","Kuba","NA"],["🇨🇾","Zypern","EU"],["🇨🇿","Tschechien","EU"],
+  ["🇩🇰","Dänemark","EU"],["🇩🇯","Dschibuti","AF"],["🇩🇲","Dominica","NA"],["🇩🇴","Dominikanische Republik","NA"],["🇪🇨","Ecuador","SA"],
+  ["🇪🇬","Ägypten","AF"],["🇸🇻","El Salvador","NA"],["🇬🇶","Äquatorialguinea","AF"],["🇪🇷","Eritrea","AF"],["🇪🇪","Estland","EU"],
+  ["🇸🇿","Eswatini","AF"],["🇪🇹","Äthiopien","AF"],["🇫🇯","Fidschi","OZ"],["🇫🇮","Finnland","EU"],["🇫🇷","Frankreich","EU"],
+  ["🇬🇦","Gabun","AF"],["🇬🇲","Gambia","AF"],["🇬🇪","Georgien","AS"],["🇩🇪","Deutschland","EU"],["🇬🇭","Ghana","AF"],
+  ["🇬🇷","Griechenland","EU"],["🇬🇩","Grenada","NA"],["🇬🇹","Guatemala","NA"],["🇬🇳","Guinea","AF"],["🇬🇼","Guinea-Bissau","AF"],
+  ["🇬🇾","Guyana","SA"],["🇭🇹","Haiti","NA"],["🇭🇳","Honduras","NA"],["🇭🇺","Ungarn","EU"],["🇮🇸","Island","EU"],
+  ["🇮🇳","Indien","AS"],["🇮🇩","Indonesien","AS"],["🇮🇷","Iran","AS"],["🇮🇶","Irak","AS"],["🇮🇪","Irland","EU"],
+  ["🇮🇱","Israel","AS"],["🇮🇹","Italien","EU"],["🇨🇮","Elfenbeinküste","AF"],["🇯🇲","Jamaika","NA"],["🇯🇵","Japan","AS"],
+  ["🇯🇴","Jordanien","AS"],["🇰🇿","Kasachstan","AS"],["🇰🇪","Kenia","AF"],["🇰🇮","Kiribati","OZ"],["🇰🇵","Nordkorea","AS"],
+  ["🇰🇷","Südkorea","AS"],["🇰🇼","Kuwait","AS"],["🇰🇬","Kirgisistan","AS"],["🇱🇦","Laos","AS"],["🇱🇻","Lettland","EU"],
+  ["🇱🇧","Libanon","AS"],["🇱🇸","Lesotho","AF"],["🇱🇷","Liberia","AF"],["🇱🇾","Libyen","AF"],["🇱🇮","Liechtenstein","EU"],
+  ["🇱🇹","Litauen","EU"],["🇱🇺","Luxemburg","EU"],["🇲🇬","Madagaskar","AF"],["🇲🇼","Malawi","AF"],["🇲🇾","Malaysia","AS"],
+  ["🇲🇻","Malediven","AS"],["🇲🇱","Mali","AF"],["🇲🇹","Malta","EU"],["🇲🇭","Marshallinseln","OZ"],["🇲🇷","Mauretanien","AF"],
+  ["🇲🇺","Mauritius","AF"],["🇲🇽","Mexiko","NA"],["🇫🇲","Mikronesien","OZ"],["🇲🇩","Moldau","EU"],["🇲🇨","Monaco","EU"],
+  ["🇲🇳","Mongolei","AS"],["🇲🇪","Montenegro","EU"],["🇲🇦","Marokko","AF"],["🇲🇿","Mosambik","AF"],["🇲🇲","Myanmar","AS"],
+  ["🇳🇦","Namibia","AF"],["🇳🇷","Nauru","OZ"],["🇳🇵","Nepal","AS"],["🇳🇱","Niederlande","EU"],["🇳🇿","Neuseeland","OZ"],
+  ["🇳🇮","Nicaragua","NA"],["🇳🇪","Niger","AF"],["🇳🇬","Nigeria","AF"],["🇲🇰","Nordmazedonien","EU"],["🇳🇴","Norwegen","EU"],
+  ["🇴🇲","Oman","AS"],["🇵🇰","Pakistan","AS"],["🇵🇼","Palau","OZ"],["🇵🇸","Palästina","AS"],["🇵🇦","Panama","NA"],
+  ["🇵🇬","Papua-Neuguinea","OZ"],["🇵🇾","Paraguay","SA"],["🇵🇪","Peru","SA"],["🇵🇭","Philippinen","AS"],["🇵🇱","Polen","EU"],
+  ["🇵🇹","Portugal","EU"],["🇶🇦","Katar","AS"],["🇷🇴","Rumänien","EU"],["🇷🇺","Russland","EU"],["🇷🇼","Ruanda","AF"],
+  ["🇰🇳","St. Kitts und Nevis","NA"],["🇱🇨","St. Lucia","NA"],["🇻🇨","St. Vincent und die Grenadinen","NA"],
+  ["🇼🇸","Samoa","OZ"],["🇸🇲","San Marino","EU"],["🇸🇹","São Tomé und Príncipe","AF"],["🇸🇦","Saudi-Arabien","AS"],
+  ["🇸🇳","Senegal","AF"],["🇷🇸","Serbien","EU"],["🇸🇨","Seychellen","AF"],["🇸🇱","Sierra Leone","AF"],["🇸🇬","Singapur","AS"],
+  ["🇸🇰","Slowakei","EU"],["🇸🇮","Slowenien","EU"],["🇸🇧","Salomonen","OZ"],["🇸🇴","Somalia","AF"],["🇿🇦","Südafrika","AF"],
+  ["🇸🇸","Südsudan","AF"],["🇪🇸","Spanien","EU"],["🇱🇰","Sri Lanka","AS"],["🇸🇩","Sudan","AF"],["🇸🇷","Suriname","SA"],
+  ["🇸🇪","Schweden","EU"],["🇨🇭","Schweiz","EU"],["🇸🇾","Syrien","AS"],["🇹🇼","Taiwan","AS"],["🇹🇯","Tadschikistan","AS"],
+  ["🇹🇿","Tansania","AF"],["🇹🇭","Thailand","AS"],["🇹🇱","Osttimor","AS"],["🇹🇬","Togo","AF"],["🇹🇴","Tonga","OZ"],
+  ["🇹🇹","Trinidad und Tobago","NA"],["🇹🇳","Tunesien","AF"],["🇹🇷","Türkei","AS"],["🇹🇲","Turkmenistan","AS"],["🇹🇻","Tuvalu","OZ"],
+  ["🇺🇬","Uganda","AF"],["🇺🇦","Ukraine","EU"],["🇦🇪","Vereinigte Arabische Emirate","AS"],["🇬🇧","Vereinigtes Königreich","EU"],
+  ["🇺🇸","Vereinigte Staaten","NA"],["🇺🇾","Uruguay","SA"],["🇺🇿","Usbekistan","AS"],["🇻🇺","Vanuatu","OZ"],
+  ["🇻🇦","Vatikanstadt","EU"],["🇻🇪","Venezuela","SA"],["🇻🇳","Vietnam","AS"],["🇾🇪","Jemen","AS"],["🇿🇲","Sambia","AF"],["🇿🇼","Simbabwe","AF"]
 ];
 
-const app = document.getElementById('app');
-let mode, questions, current, score, answers;
+const CONTINENTS = {
+  EU: { name: 'Europa', icon: '🏰' },
+  AF: { name: 'Afrika', icon: '🌍' },
+  AS: { name: 'Asien', icon: '🏯' },
+  NA: { name: 'Nordamerika', icon: '🗽' },
+  SA: { name: 'Südamerika', icon: '🌎' },
+  OZ: { name: 'Ozeanien', icon: '🏝️' }
+};
 
+// ─── STATE ───
+const app = document.getElementById('app');
+let selectedContinents = new Set(Object.keys(CONTINENTS));
+let questions, current, score, answers, totalQ;
+
+// ─── UTILITIES ───
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -415,172 +626,231 @@ function shuffle(arr) {
   return a;
 }
 
-function normalize(s) {
-  return s.toLowerCase().replace(/[-–—\s]/g, '').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function getFilteredCountries() {
+  return ALL_COUNTRIES.filter(c => selectedContinents.has(c[2]));
 }
 
-function checkAnswer(input, correct) {
-  const n1 = normalize(input);
-  const n2 = normalize(correct);
-  if (n1 === n2) return true;
-  // also accept without umlauts directly
-  const n3 = correct.toLowerCase().replace(/[-–—\s]/g, '');
-  if (n1 === normalize(n3)) return true;
-  // fuzzy: allow off by 2 chars for long names
-  if (correct.length > 6) {
-    let dist = levenshtein(n1, n2);
-    if (dist <= 2) return true;
-  }
-  return false;
+function countByContinent(code) {
+  return ALL_COUNTRIES.filter(c => c[2] === code).length;
 }
 
-function levenshtein(a, b) {
-  const m = a.length, n = b.length;
-  const d = Array.from({length: m+1}, () => Array(n+1).fill(0));
-  for (let i = 0; i <= m; i++) d[i][0] = i;
-  for (let j = 0; j <= n; j++) d[0][j] = j;
-  for (let i = 1; i <= m; i++)
-    for (let j = 1; j <= n; j++)
-      d[i][j] = Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+(a[i-1]!==b[j-1]?1:0));
-  return d[m][n];
+// ─── GLOBE SVG ───
+function getGlobeSVG(highlight) {
+  const dc = '#1e3048';
+  const hc = '#f59e0b';
+  const c = (id) => id === highlight ? hc : dc;
+
+  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <clipPath id="gc"><circle cx="100" cy="100" r="93"/></clipPath>
+      <radialGradient id="gg" cx="40%" cy="35%">
+        <stop offset="0%" stop-color="#0f2744"/>
+        <stop offset="100%" stop-color="#091428"/>
+      </radialGradient>
+      <radialGradient id="gs" cx="35%" cy="30%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0.06)"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+    </defs>
+    <circle cx="100" cy="100" r="96" fill="#091428" stroke="#1a3050" stroke-width="1.5"/>
+    <circle cx="100" cy="100" r="93" fill="url(#gg)"/>
+    <g clip-path="url(#gc)" opacity="0.12">
+      <line x1="6" y1="53" x2="194" y2="53" stroke="white" stroke-width="0.5"/>
+      <line x1="6" y1="100" x2="194" y2="100" stroke="white" stroke-width="0.5"/>
+      <line x1="6" y1="147" x2="194" y2="147" stroke="white" stroke-width="0.5"/>
+      <line x1="53" y1="6" x2="53" y2="194" stroke="white" stroke-width="0.5"/>
+      <line x1="100" y1="6" x2="100" y2="194" stroke="white" stroke-width="0.5"/>
+      <line x1="147" y1="6" x2="147" y2="194" stroke="white" stroke-width="0.5"/>
+    </g>
+    <g clip-path="url(#gc)">
+      <path d="M18,36 L28,26 L46,22 L60,26 L68,36 L68,48 L62,58 L58,68 L50,76 L52,84 L48,92 L44,86 L36,72 L28,54 L20,44 Z" fill="${c('NA')}" opacity="0.85"/>
+      <path d="M52,100 L62,94 L70,100 L72,116 L68,132 L62,148 L54,152 L50,142 L48,126 L48,108 Z" fill="${c('SA')}" opacity="0.85"/>
+      <path d="M88,28 L96,24 L108,28 L114,36 L112,46 L106,54 L98,52 L90,44 Z" fill="${c('EU')}" opacity="0.85"/>
+      <path d="M86,62 L96,58 L110,60 L120,68 L124,82 L122,100 L116,116 L108,128 L100,126 L92,114 L86,96 L84,76 Z" fill="${c('AF')}" opacity="0.85"/>
+      <path d="M114,24 L130,20 L150,18 L168,24 L178,36 L180,52 L176,68 L168,80 L156,86 L142,82 L130,74 L120,62 L114,46 L112,34 Z" fill="${c('AS')}" opacity="0.85"/>
+      <path d="M152,110 L166,104 L180,108 L184,120 L178,130 L166,134 L154,128 L148,118 Z M168,96 L174,94 L176,100 L170,102 Z" fill="${c('OZ')}" opacity="0.85"/>
+    </g>
+    <circle cx="100" cy="100" r="93" fill="url(#gs)"/>
+    <circle cx="100" cy="100" r="93" fill="none" stroke="#1a3050" stroke-width="1.5"/>
+  </svg>`;
 }
 
-function generateQuestions() {
-  const picked = shuffle(ALL_COUNTRIES).slice(0, 10);
-  return picked.map(([flag, name]) => {
-    let options = [name];
-    const others = ALL_COUNTRIES.filter(c => c[1] !== name);
-    const decoys = shuffle(others).slice(0, 2).map(c => c[1]);
-    options.push(...decoys);
-    options = shuffle(options);
-    return { flag, name, options };
-  });
-}
-
+// ─── SCREENS ───
 function showStart() {
   app.innerHTML = `
     <div class="start-screen">
-      <h1>Flaggen-Charade</h1>
+      <span class="start-emoji">🌍</span>
+      <h1>Flaggen-Quiz</h1>
       <p class="subtitle">Erkennst du alle Länderflaggen?</p>
-      <p class="mode-label">Schwierigkeitsstufe wählen</p>
-      <div class="mode-buttons">
-        <div class="mode-btn" onclick="startGame('easy')">
-          <div class="icon">😊</div>
-          <div class="label">Einfach</div>
-          <div class="desc">Wähle aus 3 Optionen</div>
-        </div>
-        <div class="mode-btn" onclick="startGame('hard')">
-          <div class="icon">🔥</div>
-          <div class="label">Schwer</div>
-          <div class="desc">Tippe den Namen ein</div>
-        </div>
-      </div>
+      <button class="start-btn" id="startBtn">Spielen</button>
     </div>`;
+  document.getElementById('startBtn').addEventListener('click', showContinentSelect);
 }
 
-function startGame(m) {
-  mode = m;
-  questions = generateQuestions();
+function showContinentSelect() {
+  const pool = getFilteredCountries();
+  const allSelected = selectedContinents.size === Object.keys(CONTINENTS).length;
+
+  const grid = Object.entries(CONTINENTS).map(([code, info]) => {
+    const count = countByContinent(code);
+    const sel = selectedContinents.has(code) ? 'selected' : '';
+    return `<div class="continent-btn ${sel}" data-code="${code}">
+      <div class="c-icon">${info.icon}</div>
+      <div class="c-name">${info.name}</div>
+      <div class="c-count">${count} Länder</div>
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="continent-screen">
+      <h2>Regionen wählen</h2>
+      <p class="sub">Wähle die Kontinente für dein Quiz</p>
+      <div class="continent-grid">${grid}</div>
+      <div class="continent-info"><span>${pool.length}</span> Länder ausgewählt</div>
+      <div class="continent-actions">
+        <button class="toggle-all-btn" id="toggleAll">${allSelected ? 'Alle abwählen' : 'Alle auswählen'}</button>
+        <button class="go-btn" id="goBtn" ${pool.length < 4 ? 'disabled' : ''}>Los geht's</button>
+      </div>
+    </div>`;
+
+  document.querySelectorAll('.continent-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleContinent(btn.dataset.code);
+    });
+  });
+
+  document.getElementById('toggleAll').addEventListener('click', toggleAllContinents);
+
+  const goBtn = document.getElementById('goBtn');
+  if (!goBtn.disabled) {
+    goBtn.addEventListener('click', startGame);
+  }
+}
+
+function toggleContinent(code) {
+  if (selectedContinents.has(code)) {
+    selectedContinents.delete(code);
+  } else {
+    selectedContinents.add(code);
+  }
+  showContinentSelect();
+}
+
+function toggleAllContinents() {
+  if (selectedContinents.size === Object.keys(CONTINENTS).length) {
+    selectedContinents.clear();
+  } else {
+    selectedContinents = new Set(Object.keys(CONTINENTS));
+  }
+  showContinentSelect();
+}
+
+function startGame() {
+  const pool = getFilteredCountries();
+  totalQ = Math.min(10, pool.length);
+  questions = generateQuestions(pool);
   current = 0;
   score = 0;
   answers = [];
   showQuestion();
 }
 
+function generateQuestions(pool) {
+  const picked = shuffle(pool).slice(0, totalQ);
+  return picked.map(([flag, name, continent]) => {
+    const others = pool.filter(c => c[1] !== name);
+    const decoys = shuffle(others).slice(0, 3).map(c => c[1]);
+    const options = shuffle([name, ...decoys]);
+    return { flag, name, continent, options };
+  });
+}
+
 function showQuestion() {
   const q = questions[current];
-  const progress = ((current) / 10) * 100;
+  const progress = (current / totalQ) * 100;
 
-  let answerArea = '';
-  if (mode === 'easy') {
-    answerArea = `<div class="choices">
-      ${q.options.map((opt, i) => `<button class="choice-btn" onclick="answerEasy(this, '${opt.replace(/'/g, "\\'")}')">${opt}</button>`).join('')}
-    </div>`;
-  } else {
-    answerArea = `<div class="input-area">
-      <input class="text-input" id="hardInput" type="text" placeholder="Ländername eingeben…" autocomplete="off"
-        onkeydown="if(event.key==='Enter')answerHard()">
-      <button class="submit-btn" onclick="answerHard()">Prüfen</button>
-      <div class="feedback" id="feedback"></div>
-    </div>`;
-  }
+  const choicesHtml = q.options.map((opt, i) =>
+    `<button class="choice-btn" data-idx="${i}">
+      <span class="key-hint">${i + 1}</span>
+      <span>${escapeHtml(opt)}</span>
+    </button>`
+  ).join('');
 
   app.innerHTML = `
     <div class="quiz-screen">
       <div class="quiz-header">
-        <span class="mode-tag">${mode === 'easy' ? '😊 Einfach' : '🔥 Schwer'}</span>
+        <span class="round-tag">🌍 Flaggen-Quiz</span>
         <span class="score-display"><span>${score}</span> / ${current}</span>
       </div>
       <div class="progress-bar"><div class="progress-fill" style="width:${progress}%"></div></div>
-      <div class="question-num">Frage ${current + 1} von 10</div>
-      <div class="flag-display">${q.flag}</div>
-      ${answerArea}
+      <div class="question-num">Frage ${current + 1} von ${totalQ}</div>
+      <div class="flag-container">
+        <div class="flag-display">${q.flag}</div>
+        <button class="hint-btn" id="hintBtn" title="Hinweis anzeigen">🌐</button>
+      </div>
+      <div class="choices">${choicesHtml}</div>
     </div>`;
 
-  if (mode === 'hard') {
-    setTimeout(() => document.getElementById('hardInput')?.focus(), 100);
-  }
+  attachQuizListeners();
 }
 
-function answerEasy(btn, chosen) {
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function attachQuizListeners() {
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(btn));
+  });
+
+  document.getElementById('hintBtn').addEventListener('click', showHint);
+}
+
+function handleAnswer(btn) {
   const q = questions[current];
+  const idx = parseInt(btn.dataset.idx);
+  const chosen = q.options[idx];
   const correct = chosen === q.name;
-  if (correct) { score++; btn.classList.add('correct'); }
-  else { btn.classList.add('wrong'); }
+
+  if (correct) {
+    score++;
+    btn.classList.add('correct');
+  } else {
+    btn.classList.add('wrong');
+  }
 
   document.querySelectorAll('.choice-btn').forEach(b => {
     b.classList.add('disabled');
-    if (b.textContent === q.name) b.classList.add('correct');
+    // Highlight the correct answer
+    const bIdx = parseInt(b.dataset.idx);
+    if (q.options[bIdx] === q.name) b.classList.add('correct');
   });
 
   answers.push({ flag: q.flag, name: q.name, correct });
   setTimeout(next, 1200);
 }
 
-function answerHard() {
-  const input = document.getElementById('hardInput');
-  const fb = document.getElementById('feedback');
-  if (!input || !input.value.trim()) return;
-
-  const q = questions[current];
-  const correct = checkAnswer(input.value.trim(), q.name);
-
-  if (correct) {
-    score++;
-    fb.className = 'feedback correct-fb';
-    fb.textContent = '✓ Richtig!';
-    input.style.borderColor = 'var(--green)';
-  } else {
-    fb.className = 'feedback wrong-fb';
-    fb.textContent = `✗ Falsch — Es war: ${q.name}`;
-    input.style.borderColor = 'var(--red)';
-  }
-
-  input.disabled = true;
-  document.querySelector('.submit-btn').style.display = 'none';
-  answers.push({ flag: q.flag, name: q.name, correct });
-  setTimeout(next, 1800);
-}
-
 function next() {
   current++;
-  if (current >= 10) showResult();
+  if (current >= totalQ) showResult();
   else showQuestion();
 }
 
 function showResult() {
   let trophy, msg;
-  if (score === 10) { trophy = '🏆'; msg = 'Perfekt! Du bist ein Flaggen-Genie!'; }
-  else if (score >= 8) { trophy = '🥇'; msg = 'Hervorragend! Fast perfekt!'; }
-  else if (score >= 6) { trophy = '🥈'; msg = 'Gut gemacht! Weiter so!'; }
-  else if (score >= 4) { trophy = '🥉'; msg = 'Nicht schlecht, aber da geht mehr!'; }
+  const pct = score / totalQ;
+  if (pct === 1) { trophy = '🏆'; msg = 'Perfekt! Du bist ein Flaggen-Genie!'; }
+  else if (pct >= 0.8) { trophy = '🥇'; msg = 'Hervorragend! Fast perfekt!'; }
+  else if (pct >= 0.6) { trophy = '🥈'; msg = 'Gut gemacht! Weiter so!'; }
+  else if (pct >= 0.4) { trophy = '🥉'; msg = 'Nicht schlecht, aber da geht mehr!'; }
   else { trophy = '📚'; msg = 'Übung macht den Meister!'; }
 
   const rows = answers.map(a => `
     <div class="result-row">
       <span class="r-flag">${a.flag}</span>
-      <span class="r-name">${a.name}</span>
+      <span class="r-name">${escapeHtml(a.name)}</span>
       <span class="r-icon">${a.correct ? '✅' : '❌'}</span>
     </div>`).join('');
 
@@ -588,14 +858,68 @@ function showResult() {
     <div class="result-screen">
       <div class="trophy">${trophy}</div>
       <h2>Ergebnis</h2>
-      <div class="result-score">${score} / 10</div>
+      <div class="result-score">${score} / ${totalQ}</div>
       <p class="result-text">${msg}</p>
       <div class="result-details">${rows}</div>
-      <button class="restart-btn" onclick="showStart()">Nochmal spielen</button>
+      <div class="result-actions">
+        <button class="restart-btn" id="restartBtn">Nochmal spielen</button>
+        <button class="region-btn" id="regionBtn">Regionen ändern</button>
+      </div>
     </div>`;
+
+  document.getElementById('restartBtn').addEventListener('click', startGame);
+  document.getElementById('regionBtn').addEventListener('click', showContinentSelect);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ─── HINT ───
+function showHint() {
+  const q = questions[current];
+  const continent = CONTINENTS[q.continent];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'hint-overlay';
+  overlay.innerHTML = `
+    <div class="hint-modal">
+      <h3>Dieses Land liegt in</h3>
+      <div class="hint-continent-name">${continent.icon} ${continent.name}</div>
+      ${getGlobeSVG(q.continent)}
+      <button class="hint-close" id="hintClose">Verstanden</button>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  document.getElementById('hintClose').addEventListener('click', closeHint);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeHint();
+  });
+}
+
+function closeHint() {
+  const overlay = document.querySelector('.hint-overlay');
+  if (overlay) overlay.remove();
+}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown', (e) => {
+  // Close hint modal with Escape
+  if (e.key === 'Escape') {
+    closeHint();
+    return;
+  }
+
+  // Number keys 1-4 for quiz answers
+  if (e.key >= '1' && e.key <= '4') {
+    const btns = document.querySelectorAll('.choice-btn:not(.disabled)');
+    if (btns.length === 0) return;
+    const idx = parseInt(e.key) - 1;
+    if (btns[idx]) {
+      handleAnswer(btns[idx]);
+    }
+  }
+});
+
+// ─── INIT ───
 showStart();
 </script>
 </body>
