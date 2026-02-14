@@ -126,49 +126,49 @@
   </div>
 </div>
 <script>
-// ONLY Unicode 6.0-7.0 emojis used - maximum compatibility
-// No ZWJ sequences, no Unicode 9.0+ emojis
+// Unicode emojis up to 15.0 (2022) - compatible with current devices
+// No ZWJ sequences
 var P = [
-  { e: "\uD83C\uDF4E \uD83C\uDF33 \u2B07\uFE0F \uD83D\uDEAB \uD83C\uDFC3", a: "Der Apfel f\u00e4llt nicht weit vom Stamm", h: "Kinder \u00e4hneln ihren Eltern" },
-  { e: "\uD83D\uDC26 \u270B \uD83D\uDC4D \uD83D\uDD4A \uD83C\uDFE0 \uD83D\uDC4E", a: "Besser ein Spatz in der Hand als eine Taube auf dem Dach", h: "Lieber etwas Sicheres haben" },
-  { e: "\uD83D\uDCAC \u270B \uD83D\uDE36 \uD83C\uDFC6", a: "Reden ist Silber, Schweigen ist Gold", h: "Manchmal besser still sein" },
-  { e: "\uD83C\uDF05 \u23F0 \uD83D\uDCB0 \uD83D\uDC44", a: "Morgenstund hat Gold im Mund", h: "Fr\u00fches Aufstehen lohnt sich" },
+  { e: "\uD83C\uDF4E \u2B07\uFE0F \uD83C\uDF33 \uD83D\uDC68 \uD83D\uDC66", a: "Der Apfel f\u00e4llt nicht weit vom Stamm", h: "Kinder \u00e4hneln ihren Eltern" },
+  { e: "\uD83D\uDC4D \uD83D\uDC26 \u270B \uD83D\uDC4E \uD83D\uDD4A \uD83C\uDFE0", a: "Besser ein Spatz in der Hand als eine Taube auf dem Dach", h: "Lieber etwas Sicheres haben" },
+  { e: "\uD83D\uDCAC \uD83E\uDD48 \uD83E\uDD2B \uD83E\uDD47", a: "Reden ist Silber, Schweigen ist Gold", h: "Manchmal besser still sein" },
+  { e: "\uD83C\uDF05 \u23F0 \uD83E\uDD47 \uD83D\uDC44", a: "Morgenstund hat Gold im Mund", h: "Fr\u00fches Aufstehen lohnt sich" },
   { e: "\uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC4D \uD83D\uDC41 \uD83D\uDC41 \uD83D\uDC4E", a: "Vier Augen sehen mehr als zwei", h: "Zusammenarbeit hilft" },
   { e: "\uD83D\uDC31 \uD83D\uDEAA \uD83D\uDC2D \uD83D\uDC83 \uD83C\uDF89", a: "Wenn die Katze aus dem Haus ist, tanzen die M\u00e4use", h: "Keine Aufsicht = Party" },
-  { e: "\uD83D\uDC14 \uD83D\uDE48 \uD83C\uDF3E \u2705", a: "Auch ein blindes Huhn findet mal ein Korn", h: "Auch Gl\u00fckstreffer passieren" },
-  { e: "\uD83D\uDC15 \uD83D\uDCAC \uD83D\uDCAC \uD83D\uDEAB \uD83D\uDE2C", a: "Bellende Hunde bei\u00dfen nicht", h: "Wer viel droht, handelt selten" },
-  { e: "\uD83C\uDFC3 \uD83C\uDFC3 \uD83C\uDFC3 \uD83D\uDC15 \uD83D\uDE2C \uD83C\uDFC3", a: "Den Letzten bei\u00dfen die Hunde", h: "Wer zu sp\u00e4t kommt, hat Pech" },
-  { e: "\uD83C\uDF05 \uD83D\uDC26 \uD83D\uDC1B \uD83C\uDFA3", a: "Der fr\u00fche Vogel f\u00e4ngt den Wurm", h: "Wer fr\u00fch dran ist, hat Vorteile" },
-  { e: "\uD83D\uDCA7 \uD83D\uDCA7 \uD83D\uDCA7 \u26F0 \u231B", a: "Steter Tropfen h\u00f6hlt den Stein", h: "Ausdauer zahlt sich aus" },
-  { e: "\uD83D\uDEE4 \uD83D\uDEE4 \uD83D\uDEE4 \u27A1\uFE0F \uD83C\uDFDB", a: "Alle Wege f\u00fchren nach Rom", h: "Es gibt viele M\u00f6glichkeiten zum Ziel" },
+  { e: "\uD83D\uDE48 \uD83D\uDC14 \uD83C\uDF3E \u2705", a: "Auch ein blindes Huhn findet mal ein Korn", h: "Auch Gl\u00fckstreffer passieren" },
+  { e: "\uD83D\uDC15 \uD83D\uDCE2 \uD83D\uDCE2 \uD83D\uDEAB \uD83E\uDDB7", a: "Hunde, die bellen, beissen nicht", h: "Wer viel droht, handelt selten" },
+  { e: "\uD83C\uDFC3 \uD83C\uDFC3 \uD83C\uDFC3 \uD83D\uDC15 \uD83E\uDDB7 \uD83C\uDFC3", a: "Den Letzten beissen die Hunde", h: "Wer zu sp\u00e4t kommt, hat Pech" },
+  { e: "\uD83C\uDF05 \uD83D\uDC26 \uD83C\uDFA3 \uD83E\uDEB1", a: "Der fr\u00fche Vogel f\u00e4ngt den Wurm", h: "Wer fr\u00fch dran ist, hat Vorteile" },
+  { e: "\uD83D\uDCA7 \uD83D\uDCA7 \uD83D\uDCA7 \uD83E\uDEA8 \uD83D\uDD73", a: "Steter Tropfen h\u00f6hlt den Stein", h: "Ausdauer zahlt sich aus" },
+  { e: "\uD83D\uDEE3\uFE0F \uD83D\uDEE3\uFE0F \uD83D\uDEE3\uFE0F \u27A1\uFE0F \uD83C\uDFDB", a: "Viele Wege f\u00fchren nach Rom", h: "Es gibt viele M\u00f6glichkeiten zum Ziel" },
   { e: "\uD83D\uDC51 \uD83D\uDE24 \u2B07\uFE0F \uD83D\uDCA5", a: "Hochmut kommt vor dem Fall", h: "\u00dcberheblichkeit f\u00fchrt zum Scheitern" },
-  { e: "\uD83D\uDE08 \uD83D\uDC63 \uD83D\uDC63 \u2702\uFE0F", a: "L\u00fcgen haben kurze Beine", h: "L\u00fcgen fliegen schnell auf" },
+  { e: "\uD83E\uDD25 \u2702\uFE0F \uD83E\uDDB5 \uD83E\uDDB5", a: "L\u00fcgen haben kurze Beine", h: "L\u00fcgen fliegen schnell auf" },
   { e: "\uD83D\uDCDD \uD83D\uDCDD \uD83D\uDCDD \u27A1\uFE0F \uD83C\uDFC6", a: "\u00dcbung macht den Meister", h: "Durch Wiederholung wird man gut" },
-  { e: "\uD83C\uDF39 \uD83D\uDEAB \uD83D\uDE16", a: "Keine Rose ohne Dornen", h: "Sch\u00f6nes hat auch Schattenseiten" },
+  { e: "\uD83C\uDF39 \uD83D\uDE0D \u27A1\uFE0F \uD83D\uDC89 \uD83D\uDE16", a: "Keine Rose ohne Dornen", h: "Sch\u00f6nes hat auch Schattenseiten" },
   { e: "\uD83D\uDC37 \uD83C\uDF40 \uD83C\uDFB0", a: "Schwein gehabt", h: "Gl\u00fcck gehabt!" },
-  { e: "\uD83D\uDC68 \uD83D\uDC68 \uD83D\uDC68 \uD83C\uDF72 \uD83D\uDC4E", a: "Viele K\u00f6che verderben den Brei", h: "Zu viele Beteiligte schaden" },
-  { e: "\uD83C\uDF72 \u2764\uFE0F \uD83C\uDF72", a: "Jeder Topf findet seinen Deckel", h: "F\u00fcr jeden gibt es den passenden Partner" },
-  { e: "\uD83C\uDD95 \u2728 \uD83C\uDFE0 \uD83D\uDC4D", a: "Neue Besen kehren gut", h: "Am Anfang ist man besonders eifrig" },
+  { e: "\uD83D\uDC68 \uD83D\uDC68 \uD83D\uDC68 \uD83D\uDC4E \uD83C\uDF72", a: "Viele K\u00f6che verderben den Brei", h: "Zu viele Beteiligte schaden" },
+  { e: "\uD83E\uDED5 \u2764\uFE0F \uD83E\uDED5", a: "Jeder Topf findet seinen Deckel", h: "F\u00fcr jeden gibt es den passenden Partner" },
+  { e: "\uD83C\uDD95 \uD83E\uDDF9 \u2728 \uD83D\uDC4D", a: "Neue Besen kehren gut", h: "Am Anfang ist man besonders eifrig" },
   { e: "\u2764\uFE0F \uD83D\uDE0D \uD83D\uDE48 \uD83D\uDE48 \uD83D\uDE48", a: "Liebe macht blind", h: "Verliebte sehen keine Fehler" },
-  { e: "\uD83D\uDC74 \uD83D\uDC75 \u2764\uFE0F \uD83D\uDEAB \u274C", a: "Alte Liebe rostet nicht", h: "Gef\u00fchle von fr\u00fcher bleiben bestehen" },
+  { e: "\uD83D\uDC74 \uD83D\uDC75 \u2764\uFE0F \u267E\uFE0F", a: "Alte Liebe rostet nicht", h: "Gef\u00fchle von fr\u00fcher bleiben bestehen" },
   { e: "\uD83D\uDC41 \u274C \u27A1\uFE0F \uD83D\uDCAD \u274C", a: "Aus den Augen, aus dem Sinn", h: "Was man nicht sieht, vergisst man" },
-  { e: "\uD83D\uDE36 \uD83C\uDF0A \u2B07\uFE0F \u2B07\uFE0F \u2B07\uFE0F", a: "Stille Wasser sind tief", h: "Ruhige Menschen haben viel in sich" },
+  { e: "\uD83E\uDD2B \uD83C\uDF0A \u2B07\uFE0F \u2B07\uFE0F \u2B07\uFE0F", a: "Stille Wasser sind tief", h: "Ruhige Menschen haben viel in sich" },
   { e: "\uD83D\uDCA8 \uD83C\uDF31 \u27A1\uFE0F \uD83C\uDF2A \uD83C\uDF3E", a: "Wer Wind s\u00e4t, wird Sturm ernten", h: "Schlechtes Verhalten hat Konsequenzen" },
   { e: "\uD83C\uDF32 \uD83D\uDCE2 \u27A1\uFE0F \uD83C\uDF32 \uD83D\uDCE2", a: "Wie man in den Wald hineinruft, so schallt es heraus", h: "Wie man andere behandelt, wird man selbst behandelt" },
-  { e: "\uD83D\uDD28 \uD83D\uDCA5 \uD83C\uDFAF \uD83D\uDC46", a: "Den Nagel auf den Kopf treffen", h: "Genau das Richtige sagen" },
+  { e: "\uD83D\uDCCC \uD83D\uDD28 \uD83C\uDFAF", a: "Den Nagel auf den Kopf treffen", h: "Genau das Richtige sagen" },
   { e: "\uD83D\uDD73 \u26CF \u27A1\uFE0F \uD83D\uDE31 \u2B07\uFE0F", a: "Wer anderen eine Grube gr\u00e4bt, f\u00e4llt selbst hinein", h: "Wer anderen schadet, schadet sich selbst" },
   { e: "\uD83C\uDFC1 \uD83D\uDC4D \u27A1\uFE0F \uD83D\uDC4D \uD83D\uDC4D \uD83D\uDC4D", a: "Ende gut, alles gut", h: "Hauptsache es geht gut aus" },
-  { e: "\u2728 \uD83D\uDCB0 \u274C \uD83D\uDCB0 \uD83D\uDCB0", a: "Es ist nicht alles Gold, was gl\u00e4nzt", h: "Der Schein kann tr\u00fcgen" },
-  { e: "\uD83D\uDC68 \uD83D\uDD28 \uD83C\uDF40", a: "Jeder ist seines Gl\u00fcckes Schmied", h: "Man formt sein eigenes Schicksal" },
-  { e: "\u23F0 \uD83D\uDC4E \uD83D\uDEAB \uD83D\uDC4E \uD83D\uDC4E", a: "Besser sp\u00e4t als nie", h: "Lieber versp\u00e4tet als gar nicht" },
-  { e: "\uD83C\uDFC3 \u27A1\uFE0F \uD83C\uDFAF", a: "Wer zuerst kommt, mahlt zuerst", h: "Wer fr\u00fcher da ist, hat Vorrang" },
+  { e: "\u2728 \u2728 \u2728 \u274C \uD83E\uDD47", a: "Es ist nicht alles Gold, was gl\u00e4nzt", h: "Der Schein kann tr\u00fcgen" },
+  { e: "\uD83E\uDDD1 \uD83C\uDF40 \u2692\uFE0F \uD83D\uDD25", a: "Jeder ist seines Gl\u00fcckes Schmied", h: "Man formt sein eigenes Schicksal" },
+  { e: "\u23F0 \uD83D\uDC4D \uD83D\uDEAB \u274C", a: "Besser sp\u00e4t als nie", h: "Lieber versp\u00e4tet als gar nicht" },
+  { e: "1\uFE0F\u20E3 \uD83C\uDFC3 \u27A1\uFE0F \uD83C\uDF3E", a: "Wer zuerst kommt, mahlt zuerst", h: "Wer fr\u00fcher da ist, hat Vorrang" },
   { e: "\uD83C\uDF0D \u27A1\uFE0F \uD83C\uDFE0 \uD83C\uDFE0", a: "Die Welt ist ein Dorf", h: "Man trifft sich immer zweimal" },
-  { e: "\uD83D\uDC94 \uD83C\uDF40", a: "Scherben bringen Gl\u00fcck", h: "Wenn etwas kaputt geht, bringt es Gl\u00fcck" },
-  { e: "\uD83C\uDFC3 \uD83D\uDE13", a: "Aller Anfang ist schwer", h: "Der Beginn ist immer am schwierigsten" },
+  { e: "\uD83C\uDF7D\uFE0F \uD83D\uDCA5 \uD83C\uDF40", a: "Scherben bringen Gl\u00fcck", h: "Wenn etwas kaputt geht, bringt es Gl\u00fcck" },
+  { e: "\uD83C\uDD95 \uD83C\uDFC3 \uD83D\uDE13", a: "Aller Anfang ist schwer", h: "Der Beginn ist immer am schwierigsten" },
 ];
 
 var TOTAL = 10;
-var gp = [], ci = 0, sc = 0, hu = false, sa = false, rr = [];
+var gp = [], ci = 0, sc = 0, hu = false, sa = false, rr = [], tm = false;
 
 var $ = function(id) { return document.getElementById(id); };
 var roundB = $('roundBadge'), scoreB = $('scoreBadge'), eCard = $('emojiCard'),
@@ -276,6 +276,7 @@ function submit() {
 }
 
 function hint() {
+  if (tm) { if (ci > 0) { ci--; renderTest(); } return; }
   hTxt.textContent = gp[ci].h;
   hBox.classList.remove('dn');
   hBtn.classList.add('dn');
@@ -283,6 +284,7 @@ function hint() {
 }
 
 function give() {
+  if (tm) { exitTest(); return; }
   var c = gp[ci]; sa = true;
   rr.push({correct:false, hu:hu, a:c.a});
   aBox.classList.remove('dn'); aBox.classList.remove('correct');
@@ -295,6 +297,10 @@ function give() {
 }
 
 function next() {
+  if (tm) {
+    if (ci + 1 >= gp.length) { exitTest(); return; }
+    ci++; renderTest(); return;
+  }
   if (ci+1 >= TOTAL) { gameover(); return; }
   ci++; render();
 }
@@ -329,6 +335,64 @@ hBtn.addEventListener('click', hint);
 gBtn.addEventListener('click', give);
 nBtn.addEventListener('click', next);
 paBtn.addEventListener('click', start);
+
+// Test mode: Alt+Click on title
+document.querySelector('.title').addEventListener('click', function(e) {
+  if (e.altKey) { e.preventDefault(); tm ? exitTest() : startTest(); }
+});
+document.addEventListener('keydown', function(e) {
+  if (!tm) return;
+  if (e.key === 'ArrowRight') { if (ci + 1 < gp.length) { ci++; renderTest(); } }
+  else if (e.key === 'ArrowLeft') { if (ci > 0) { ci--; renderTest(); } }
+  else if (e.key === 'Escape') { exitTest(); }
+});
+function startTest() {
+  tm = true;
+  gp = P.slice();
+  ci = 0;
+  goScr.classList.add('dn');
+  gScr.classList.remove('dn');
+  roundB.classList.remove('dn');
+  pRow.innerHTML = '';
+  renderTest();
+}
+function exitTest() {
+  tm = false;
+  hBtn.textContent = '\uD83D\uDCA1 Hinweis';
+  gBtn.textContent = '\uD83C\uDFF3\uFE0F Aufl\u00f6sen';
+  hBtn.disabled = false;
+  TOTAL = 10;
+  start();
+}
+function renderTest() {
+  var c = gp[ci];
+  roundB.textContent = 'TEST ' + (ci+1) + '/' + gp.length;
+  scoreB.textContent = '\uD83D\uDD27 Test';
+  eDisp.innerHTML = '';
+  c.e.split(' ').forEach(function(em, i) {
+    var sp = document.createElement('span');
+    sp.className = 'emoji-char';
+    sp.textContent = em;
+    sp.style.animationDelay = (i * 0.08) + 's';
+    eDisp.appendChild(sp);
+  });
+  eCard.classList.add('vis'); eCard.classList.remove('hid');
+  hBox.classList.remove('dn');
+  hTxt.textContent = c.h;
+  aBox.classList.remove('dn'); aBox.classList.remove('correct');
+  aLbl.textContent = 'Sprichwort:';
+  aTxt.textContent = c.a;
+  pEarn.classList.add('dn');
+  iRow.classList.add('dn'); wMsg.classList.add('dn');
+  aRow.classList.remove('dn');
+  hBtn.classList.remove('dn');
+  hBtn.textContent = '\u2B05\uFE0F Zur\u00fcck';
+  hBtn.disabled = ci === 0;
+  gBtn.classList.remove('dn');
+  gBtn.textContent = '\u274C Beenden';
+  nBtn.classList.remove('dn');
+  nBtn.textContent = ci + 1 < gp.length ? '\u27A1\uFE0F Weiter (' + (ci+2) + '/' + gp.length + ')' : '\u2705 Fertig';
+}
 
 start();
 </script>
