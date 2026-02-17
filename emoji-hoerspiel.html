@@ -147,6 +147,92 @@
     transform: translateY(-1px) scale(0.97);
   }
 
+  .lang-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .lang-btn .no-voice {
+    font-size: 0.7rem;
+    color: var(--wrong);
+    font-weight: 400;
+  }
+
+  .speed-section {
+    margin-top: 32px;
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .speed-label {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .speed-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 14px 18px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .speed-row span {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    min-width: 40px;
+  }
+
+  .speed-row span:last-child {
+    text-align: right;
+  }
+
+  .speed-value {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    color: var(--accent) !important;
+    min-width: 50px !important;
+    text-align: center !important;
+  }
+
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid white;
+  }
+
   /* === GAME SCREEN === */
   #game-screen {
     display: none;
@@ -516,19 +602,28 @@
     <h1>Emoji Hörspiel</h1>
     <p class="subtitle">Höre ein Wort und finde das passende Emoji!<br>Wähle deine Sprache:</p>
 
-    <div class="lang-grid">
-      <button class="lang-btn" onclick="startGame('de')">
+    <div class="lang-grid" id="lang-grid">
+      <button class="lang-btn" id="lang-de" onclick="startGame('de')">
         <span class="flag">🇩🇪</span> Deutsch
       </button>
-      <button class="lang-btn" onclick="startGame('en')">
+      <button class="lang-btn" id="lang-en" onclick="startGame('en')">
         <span class="flag">🇬🇧</span> English
       </button>
-      <button class="lang-btn" onclick="startGame('it')">
+      <button class="lang-btn" id="lang-it" onclick="startGame('it')">
         <span class="flag">🇮🇹</span> Italiano
       </button>
-      <button class="lang-btn" onclick="startGame('fr')">
+      <button class="lang-btn" id="lang-fr" onclick="startGame('fr')">
         <span class="flag">🇫🇷</span> Français
       </button>
+    </div>
+
+    <div class="speed-section">
+      <div class="speed-label">🐢 Sprechgeschwindigkeit 🐇</div>
+      <div class="speed-row">
+        <span>Langsam</span>
+        <input type="range" id="speed-slider" min="0.3" max="1.0" step="0.1" value="0.6">
+        <span>Normal</span>
+      </div>
     </div>
   </div>
 
@@ -575,6 +670,7 @@
 <script>
 // === WORD DATA ===
 const WORDS = [
+  // === Tiere ===
   { emoji: "🐶", de: "Hund", en: "Dog", it: "Cane", fr: "Chien" },
   { emoji: "🐱", de: "Katze", en: "Cat", it: "Gatto", fr: "Chat" },
   { emoji: "🐟", de: "Fisch", en: "Fish", it: "Pesce", fr: "Poisson" },
@@ -587,18 +683,102 @@ const WORDS = [
   { emoji: "🦁", de: "Löwe", en: "Lion", it: "Leone", fr: "Lion" },
   { emoji: "🐘", de: "Elefant", en: "Elephant", it: "Elefante", fr: "Éléphant" },
   { emoji: "🦋", de: "Schmetterling", en: "Butterfly", it: "Farfalla", fr: "Papillon" },
+  { emoji: "🐭", de: "Maus", en: "Mouse", it: "Topo", fr: "Souris" },
+  { emoji: "🐰", de: "Hase", en: "Rabbit", it: "Coniglio", fr: "Lapin" },
+  { emoji: "🐻", de: "Bär", en: "Bear", it: "Orso", fr: "Ours" },
+  { emoji: "🐺", de: "Wolf", en: "Wolf", it: "Lupo", fr: "Loup" },
+  { emoji: "🦊", de: "Fuchs", en: "Fox", it: "Volpe", fr: "Renard" },
+  { emoji: "🐧", de: "Pinguin", en: "Penguin", it: "Pinguino", fr: "Pingouin" },
+  { emoji: "🦅", de: "Adler", en: "Eagle", it: "Aquila", fr: "Aigle" },
+  { emoji: "🦆", de: "Ente", en: "Duck", it: "Anatra", fr: "Canard" },
+  { emoji: "🦉", de: "Eule", en: "Owl", it: "Gufo", fr: "Hibou" },
+  { emoji: "🐍", de: "Schlange", en: "Snake", it: "Serpente", fr: "Serpent" },
+  { emoji: "🐊", de: "Krokodil", en: "Crocodile", it: "Coccodrillo", fr: "Crocodile" },
+  { emoji: "🦈", de: "Hai", en: "Shark", it: "Squalo", fr: "Requin" },
+  { emoji: "🐋", de: "Wal", en: "Whale", it: "Balena", fr: "Baleine" },
+  { emoji: "🐬", de: "Delfin", en: "Dolphin", it: "Delfino", fr: "Dauphin" },
+  { emoji: "🦀", de: "Krabbe", en: "Crab", it: "Granchio", fr: "Crabe" },
+  { emoji: "🐙", de: "Krake", en: "Octopus", it: "Polpo", fr: "Pieuvre" },
+  { emoji: "🐌", de: "Schnecke", en: "Snail", it: "Lumaca", fr: "Escargot" },
+  { emoji: "🐝", de: "Biene", en: "Bee", it: "Ape", fr: "Abeille" },
+  { emoji: "🐞", de: "Marienkäfer", en: "Ladybug", it: "Coccinella", fr: "Coccinelle" },
+  { emoji: "🕷️", de: "Spinne", en: "Spider", it: "Ragno", fr: "Araignée" },
+  { emoji: "🦎", de: "Eidechse", en: "Lizard", it: "Lucertola", fr: "Lézard" },
+  { emoji: "🐫", de: "Kamel", en: "Camel", it: "Cammello", fr: "Chameau" },
+  { emoji: "🦒", de: "Giraffe", en: "Giraffe", it: "Giraffa", fr: "Girafe" },
+  { emoji: "🦓", de: "Zebra", en: "Zebra", it: "Zebra", fr: "Zèbre" },
+  { emoji: "🦔", de: "Igel", en: "Hedgehog", it: "Riccio", fr: "Hérisson" },
+  { emoji: "🐿️", de: "Eichhörnchen", en: "Squirrel", it: "Scoiattolo", fr: "Écureuil" },
+  { emoji: "🦩", de: "Flamingo", en: "Flamingo", it: "Fenicottero", fr: "Flamant" },
+  { emoji: "🦜", de: "Papagei", en: "Parrot", it: "Pappagallo", fr: "Perroquet" },
+  { emoji: "🐓", de: "Hahn", en: "Rooster", it: "Gallo", fr: "Coq" },
+  { emoji: "🦃", de: "Truthahn", en: "Turkey", it: "Tacchino", fr: "Dinde" },
+  { emoji: "🐑", de: "Schaf", en: "Sheep", it: "Pecora", fr: "Mouton" },
+  { emoji: "🐐", de: "Ziege", en: "Goat", it: "Capra", fr: "Chèvre" },
+  { emoji: "🦌", de: "Hirsch", en: "Deer", it: "Cervo", fr: "Cerf" },
+  { emoji: "🐀", de: "Ratte", en: "Rat", it: "Ratto", fr: "Rat" },
+  { emoji: "🦭", de: "Robbe", en: "Seal", it: "Foca", fr: "Phoque" },
+  { emoji: "🦦", de: "Otter", en: "Otter", it: "Lontra", fr: "Loutre" },
+  { emoji: "🦥", de: "Faultier", en: "Sloth", it: "Bradipo", fr: "Paresseux" },
+  { emoji: "🐃", de: "Büffel", en: "Buffalo", it: "Bufalo", fr: "Buffle" },
+  { emoji: "🦍", de: "Gorilla", en: "Gorilla", it: "Gorilla", fr: "Gorille" },
+  { emoji: "🐒", de: "Affe", en: "Monkey", it: "Scimmia", fr: "Singe" },
+  { emoji: "🦇", de: "Fledermaus", en: "Bat", it: "Pipistrello", fr: "Chauve-souris" },
+  { emoji: "🐳", de: "Blauwal", en: "Blue whale", it: "Balenottera", fr: "Baleine bleue" },
+  // === Obst & Gemüse ===
   { emoji: "🍎", de: "Apfel", en: "Apple", it: "Mela", fr: "Pomme" },
   { emoji: "🍌", de: "Banane", en: "Banana", it: "Banana", fr: "Banane" },
   { emoji: "🍇", de: "Traube", en: "Grape", it: "Uva", fr: "Raisin" },
   { emoji: "🍊", de: "Orange", en: "Orange", it: "Arancia", fr: "Orange" },
   { emoji: "🍓", de: "Erdbeere", en: "Strawberry", it: "Fragola", fr: "Fraise" },
   { emoji: "🍉", de: "Wassermelone", en: "Watermelon", it: "Anguria", fr: "Pastèque" },
+  { emoji: "🥕", de: "Karotte", en: "Carrot", it: "Carota", fr: "Carotte" },
+  { emoji: "🍋", de: "Zitrone", en: "Lemon", it: "Limone", fr: "Citron" },
+  { emoji: "🍐", de: "Birne", en: "Pear", it: "Pera", fr: "Poire" },
+  { emoji: "🍑", de: "Pfirsich", en: "Peach", it: "Pesca", fr: "Pêche" },
+  { emoji: "🍒", de: "Kirsche", en: "Cherry", it: "Ciliegia", fr: "Cerise" },
+  { emoji: "🥝", de: "Kiwi", en: "Kiwi", it: "Kiwi", fr: "Kiwi" },
+  { emoji: "🍍", de: "Ananas", en: "Pineapple", it: "Ananas", fr: "Ananas" },
+  { emoji: "🥑", de: "Avocado", en: "Avocado", it: "Avocado", fr: "Avocat" },
+  { emoji: "🌽", de: "Mais", en: "Corn", it: "Mais", fr: "Maïs" },
+  { emoji: "🥦", de: "Brokkoli", en: "Broccoli", it: "Broccolo", fr: "Brocoli" },
+  { emoji: "🥒", de: "Gurke", en: "Cucumber", it: "Cetriolo", fr: "Concombre" },
+  { emoji: "🍄", de: "Pilz", en: "Mushroom", it: "Fungo", fr: "Champignon" },
+  { emoji: "🧅", de: "Zwiebel", en: "Onion", it: "Cipolla", fr: "Oignon" },
+  { emoji: "🧄", de: "Knoblauch", en: "Garlic", it: "Aglio", fr: "Ail" },
+  { emoji: "🥔", de: "Kartoffel", en: "Potato", it: "Patata", fr: "Pomme de terre" },
+  { emoji: "🌶️", de: "Chili", en: "Chili", it: "Peperoncino", fr: "Piment" },
+  { emoji: "🫑", de: "Paprika", en: "Bell pepper", it: "Peperone", fr: "Poivron" },
+  { emoji: "🥬", de: "Kopfsalat", en: "Lettuce", it: "Lattuga", fr: "Laitue" },
+  { emoji: "🫐", de: "Blaubeere", en: "Blueberry", it: "Mirtillo", fr: "Myrtille" },
+  { emoji: "🥭", de: "Mango", en: "Mango", it: "Mango", fr: "Mangue" },
+  { emoji: "🥥", de: "Kokosnuss", en: "Coconut", it: "Cocco", fr: "Noix de coco" },
+  // === Essen & Trinken ===
   { emoji: "🍕", de: "Pizza", en: "Pizza", it: "Pizza", fr: "Pizza" },
   { emoji: "🍔", de: "Hamburger", en: "Hamburger", it: "Hamburger", fr: "Hamburger" },
   { emoji: "🍦", de: "Eiscreme", en: "Ice cream", it: "Gelato", fr: "Glace" },
   { emoji: "🎂", de: "Kuchen", en: "Cake", it: "Torta", fr: "Gâteau" },
   { emoji: "🧀", de: "Käse", en: "Cheese", it: "Formaggio", fr: "Fromage" },
-  { emoji: "🥕", de: "Karotte", en: "Carrot", it: "Carota", fr: "Carotte" },
+  { emoji: "🍞", de: "Brot", en: "Bread", it: "Pane", fr: "Pain" },
+  { emoji: "🥚", de: "Ei", en: "Egg", it: "Uovo", fr: "Œuf" },
+  { emoji: "🥛", de: "Milch", en: "Milk", it: "Latte", fr: "Lait" },
+  { emoji: "☕", de: "Kaffee", en: "Coffee", it: "Caffè", fr: "Café" },
+  { emoji: "🍵", de: "Tee", en: "Tea", it: "Tè", fr: "Thé" },
+  { emoji: "🍪", de: "Keks", en: "Cookie", it: "Biscotto", fr: "Biscuit" },
+  { emoji: "🍩", de: "Donut", en: "Donut", it: "Ciambella", fr: "Beignet" },
+  { emoji: "🍫", de: "Schokolade", en: "Chocolate", it: "Cioccolato", fr: "Chocolat" },
+  { emoji: "🍿", de: "Popcorn", en: "Popcorn", it: "Popcorn", fr: "Popcorn" },
+  { emoji: "🌮", de: "Taco", en: "Taco", it: "Taco", fr: "Taco" },
+  { emoji: "🥗", de: "Salat", en: "Salad", it: "Insalata", fr: "Salade" },
+  { emoji: "🍝", de: "Spaghetti", en: "Spaghetti", it: "Spaghetti", fr: "Spaghetti" },
+  { emoji: "🍣", de: "Sushi", en: "Sushi", it: "Sushi", fr: "Sushi" },
+  { emoji: "🥐", de: "Croissant", en: "Croissant", it: "Cornetto", fr: "Croissant" },
+  { emoji: "🧁", de: "Muffin", en: "Cupcake", it: "Muffin", fr: "Muffin" },
+  { emoji: "🍰", de: "Torte", en: "Pie", it: "Fetta di torta", fr: "Tarte" },
+  { emoji: "🧃", de: "Saft", en: "Juice", it: "Succo", fr: "Jus" },
+  { emoji: "🍯", de: "Honig", en: "Honey", it: "Miele", fr: "Miel" },
+  { emoji: "🥨", de: "Brezel", en: "Pretzel", it: "Pretzel", fr: "Bretzel" },
+  // === Natur & Wetter ===
   { emoji: "🌳", de: "Baum", en: "Tree", it: "Albero", fr: "Arbre" },
   { emoji: "🌻", de: "Sonnenblume", en: "Sunflower", it: "Girasole", fr: "Tournesol" },
   { emoji: "⭐", de: "Stern", en: "Star", it: "Stella", fr: "Étoile" },
@@ -607,14 +787,71 @@ const WORDS = [
   { emoji: "🌧️", de: "Regen", en: "Rain", it: "Pioggia", fr: "Pluie" },
   { emoji: "❄️", de: "Schnee", en: "Snow", it: "Neve", fr: "Neige" },
   { emoji: "🌈", de: "Regenbogen", en: "Rainbow", it: "Arcobaleno", fr: "Arc-en-ciel" },
+  { emoji: "🌊", de: "Welle", en: "Wave", it: "Onda", fr: "Vague" },
+  { emoji: "🌋", de: "Vulkan", en: "Volcano", it: "Vulcano", fr: "Volcan" },
+  { emoji: "⛰️", de: "Berg", en: "Mountain", it: "Montagna", fr: "Montagne" },
+  { emoji: "🏝️", de: "Insel", en: "Island", it: "Isola", fr: "Île" },
+  { emoji: "🌵", de: "Kaktus", en: "Cactus", it: "Cactus", fr: "Cactus" },
+  { emoji: "🍀", de: "Kleeblatt", en: "Clover", it: "Trifoglio", fr: "Trèfle" },
+  { emoji: "🌹", de: "Rose", en: "Rose", it: "Rosa", fr: "Rose" },
+  { emoji: "🌷", de: "Tulpe", en: "Tulip", it: "Tulipano", fr: "Tulipe" },
+  { emoji: "🌸", de: "Kirschblüte", en: "Cherry blossom", it: "Fiore di ciliegio", fr: "Fleur de cerisier" },
+  { emoji: "🍂", de: "Herbstblatt", en: "Fallen leaf", it: "Foglia", fr: "Feuille" },
+  { emoji: "🌾", de: "Weizen", en: "Wheat", it: "Grano", fr: "Blé" },
+  { emoji: "⚡", de: "Blitz", en: "Lightning", it: "Fulmine", fr: "Éclair" },
+  { emoji: "🌪️", de: "Tornado", en: "Tornado", it: "Tornado", fr: "Tornade" },
+  { emoji: "🍁", de: "Ahornblatt", en: "Maple leaf", it: "Foglia d'acero", fr: "Feuille d'érable" },
+  // === Gebäude & Orte ===
   { emoji: "🏠", de: "Haus", en: "House", it: "Casa", fr: "Maison" },
+  { emoji: "🏰", de: "Schloss", en: "Castle", it: "Castello", fr: "Château" },
+  { emoji: "⛪", de: "Kirche", en: "Church", it: "Chiesa", fr: "Église" },
+  { emoji: "🏥", de: "Krankenhaus", en: "Hospital", it: "Ospedale", fr: "Hôpital" },
+  { emoji: "🏫", de: "Schule", en: "School", it: "Scuola", fr: "École" },
+  { emoji: "🏪", de: "Laden", en: "Shop", it: "Negozio", fr: "Magasin" },
+  { emoji: "⛺", de: "Zelt", en: "Tent", it: "Tenda", fr: "Tente" },
+  { emoji: "🗼", de: "Turm", en: "Tower", it: "Torre", fr: "Tour" },
+  { emoji: "🌉", de: "Brücke", en: "Bridge", it: "Ponte", fr: "Pont" },
+  { emoji: "🏟️", de: "Stadion", en: "Stadium", it: "Stadio", fr: "Stade" },
+  // === Fahrzeuge & Transport ===
   { emoji: "🚗", de: "Auto", en: "Car", it: "Macchina", fr: "Voiture" },
   { emoji: "✈️", de: "Flugzeug", en: "Airplane", it: "Aereo", fr: "Avion" },
   { emoji: "🚢", de: "Schiff", en: "Ship", it: "Nave", fr: "Navire" },
   { emoji: "🚲", de: "Fahrrad", en: "Bicycle", it: "Bicicletta", fr: "Vélo" },
   { emoji: "🚀", de: "Rakete", en: "Rocket", it: "Razzo", fr: "Fusée" },
+  { emoji: "🚂", de: "Zug", en: "Train", it: "Treno", fr: "Train" },
+  { emoji: "🚁", de: "Hubschrauber", en: "Helicopter", it: "Elicottero", fr: "Hélicoptère" },
+  { emoji: "🚌", de: "Bus", en: "Bus", it: "Autobus", fr: "Bus" },
+  { emoji: "🏍️", de: "Motorrad", en: "Motorcycle", it: "Motocicletta", fr: "Moto" },
+  { emoji: "🛴", de: "Roller", en: "Scooter", it: "Monopattino", fr: "Trottinette" },
+  { emoji: "🚜", de: "Traktor", en: "Tractor", it: "Trattore", fr: "Tracteur" },
+  { emoji: "🚒", de: "Feuerwehr", en: "Fire truck", it: "Pompieri", fr: "Pompiers" },
+  { emoji: "🚑", de: "Krankenwagen", en: "Ambulance", it: "Ambulanza", fr: "Ambulance" },
+  { emoji: "🚓", de: "Polizeiauto", en: "Police car", it: "Polizia", fr: "Voiture de police" },
+  { emoji: "⛵", de: "Segelboot", en: "Sailboat", it: "Barca a vela", fr: "Voilier" },
+  { emoji: "🛶", de: "Kanu", en: "Canoe", it: "Canoa", fr: "Canoë" },
+  // === Sport & Freizeit ===
   { emoji: "⚽", de: "Fussball", en: "Soccer ball", it: "Pallone", fr: "Ballon" },
+  { emoji: "🏀", de: "Basketball", en: "Basketball", it: "Pallacanestro", fr: "Basket" },
+  { emoji: "🎾", de: "Tennis", en: "Tennis", it: "Tennis", fr: "Tennis" },
+  { emoji: "🏈", de: "Football", en: "Football", it: "Football", fr: "Football" },
+  { emoji: "⛷️", de: "Skifahrer", en: "Skier", it: "Sciatore", fr: "Skieur" },
+  { emoji: "🏊", de: "Schwimmer", en: "Swimmer", it: "Nuotatore", fr: "Nageur" },
+  { emoji: "🎣", de: "Angeln", en: "Fishing", it: "Pesca", fr: "Pêche" },
+  { emoji: "🏄", de: "Surfer", en: "Surfer", it: "Surfista", fr: "Surfeur" },
+  { emoji: "🎯", de: "Zielscheibe", en: "Target", it: "Bersaglio", fr: "Cible" },
+  { emoji: "🥊", de: "Boxhandschuh", en: "Boxing glove", it: "Guantone", fr: "Gant de boxe" },
+  { emoji: "🏓", de: "Tischtennis", en: "Table tennis", it: "Ping pong", fr: "Ping-pong" },
+  { emoji: "🎳", de: "Bowling", en: "Bowling", it: "Bowling", fr: "Bowling" },
+  // === Musik & Kunst ===
   { emoji: "🎸", de: "Gitarre", en: "Guitar", it: "Chitarra", fr: "Guitare" },
+  { emoji: "🎹", de: "Klavier", en: "Piano", it: "Pianoforte", fr: "Piano" },
+  { emoji: "🥁", de: "Trommel", en: "Drum", it: "Tamburo", fr: "Tambour" },
+  { emoji: "🎺", de: "Trompete", en: "Trumpet", it: "Tromba", fr: "Trompette" },
+  { emoji: "🎻", de: "Geige", en: "Violin", it: "Violino", fr: "Violon" },
+  { emoji: "🎨", de: "Palette", en: "Palette", it: "Tavolozza", fr: "Palette" },
+  { emoji: "🎭", de: "Theater", en: "Theater", it: "Teatro", fr: "Théâtre" },
+  { emoji: "🎬", de: "Filmklappe", en: "Clapperboard", it: "Ciak", fr: "Clap" },
+  // === Objekte & Alltag ===
   { emoji: "📚", de: "Bücher", en: "Books", it: "Libri", fr: "Livres" },
   { emoji: "🔑", de: "Schlüssel", en: "Key", it: "Chiave", fr: "Clé" },
   { emoji: "💡", de: "Glühbirne", en: "Light bulb", it: "Lampadina", fr: "Ampoule" },
@@ -625,10 +862,95 @@ const WORDS = [
   { emoji: "🔔", de: "Glocke", en: "Bell", it: "Campana", fr: "Cloche" },
   { emoji: "🕐", de: "Uhr", en: "Clock", it: "Orologio", fr: "Horloge" },
   { emoji: "🌍", de: "Erde", en: "Earth", it: "Terra", fr: "Terre" },
+  { emoji: "🔨", de: "Hammer", en: "Hammer", it: "Martello", fr: "Marteau" },
+  { emoji: "✂️", de: "Schere", en: "Scissors", it: "Forbici", fr: "Ciseaux" },
+  { emoji: "📎", de: "Büroklammer", en: "Paper clip", it: "Graffetta", fr: "Trombone" },
+  { emoji: "📏", de: "Lineal", en: "Ruler", it: "Righello", fr: "Règle" },
+  { emoji: "🖊️", de: "Stift", en: "Pen", it: "Penna", fr: "Stylo" },
+  { emoji: "📷", de: "Kamera", en: "Camera", it: "Fotocamera", fr: "Appareil photo" },
+  { emoji: "💻", de: "Laptop", en: "Laptop", it: "Portatile", fr: "Ordinateur" },
+  { emoji: "📱", de: "Handy", en: "Phone", it: "Cellulare", fr: "Téléphone" },
+  { emoji: "🔦", de: "Taschenlampe", en: "Flashlight", it: "Torcia", fr: "Lampe torche" },
+  { emoji: "🧲", de: "Magnet", en: "Magnet", it: "Magnete", fr: "Aimant" },
+  { emoji: "⏰", de: "Wecker", en: "Alarm clock", it: "Sveglia", fr: "Réveil" },
+  { emoji: "🧸", de: "Teddybär", en: "Teddy bear", it: "Orsacchiotto", fr: "Nounours" },
+  { emoji: "🎒", de: "Rucksack", en: "Backpack", it: "Zaino", fr: "Sac à dos" },
+  { emoji: "👓", de: "Brille", en: "Glasses", it: "Occhiali", fr: "Lunettes" },
+  { emoji: "🧤", de: "Handschuh", en: "Glove", it: "Guanto", fr: "Gant" },
+  { emoji: "🧣", de: "Schal", en: "Scarf", it: "Sciarpa", fr: "Écharpe" },
+  { emoji: "👒", de: "Hut", en: "Hat", it: "Cappello", fr: "Chapeau" },
+  { emoji: "👟", de: "Schuh", en: "Shoe", it: "Scarpa", fr: "Chaussure" },
+  { emoji: "🧦", de: "Socke", en: "Sock", it: "Calzino", fr: "Chaussette" },
+  { emoji: "👗", de: "Kleid", en: "Dress", it: "Vestito", fr: "Robe" },
+  { emoji: "🧥", de: "Mantel", en: "Coat", it: "Cappotto", fr: "Manteau" },
+  { emoji: "👕", de: "T-Shirt", en: "T-Shirt", it: "Maglietta", fr: "T-Shirt" },
+  { emoji: "🎩", de: "Zylinder", en: "Top hat", it: "Cilindro", fr: "Haut-de-forme" },
+  { emoji: "☂️", de: "Regenschirm", en: "Umbrella", it: "Ombrello", fr: "Parapluie" },
+  { emoji: "🗝️", de: "Alter Schlüssel", en: "Old key", it: "Vecchia chiave", fr: "Vieille clé" },
+  { emoji: "🕯️", de: "Kerze", en: "Candle", it: "Candela", fr: "Bougie" },
+  { emoji: "🧹", de: "Besen", en: "Broom", it: "Scopa", fr: "Balai" },
+  { emoji: "🪣", de: "Eimer", en: "Bucket", it: "Secchio", fr: "Seau" },
+  { emoji: "🧴", de: "Seife", en: "Soap", it: "Sapone", fr: "Savon" },
+  { emoji: "🪞", de: "Spiegel", en: "Mirror", it: "Specchio", fr: "Miroir" },
+  { emoji: "🛏️", de: "Bett", en: "Bed", it: "Letto", fr: "Lit" },
+  { emoji: "🪑", de: "Stuhl", en: "Chair", it: "Sedia", fr: "Chaise" },
+  { emoji: "🚪", de: "Tür", en: "Door", it: "Porta", fr: "Porte" },
+  { emoji: "🪟", de: "Fenster", en: "Window", it: "Finestra", fr: "Fenêtre" },
+  // === Körper & Gesundheit ===
+  { emoji: "❤️", de: "Herz", en: "Heart", it: "Cuore", fr: "Cœur" },
+  { emoji: "🧠", de: "Gehirn", en: "Brain", it: "Cervello", fr: "Cerveau" },
+  { emoji: "👁️", de: "Auge", en: "Eye", it: "Occhio", fr: "Œil" },
+  { emoji: "👂", de: "Ohr", en: "Ear", it: "Orecchio", fr: "Oreille" },
+  { emoji: "👃", de: "Nase", en: "Nose", it: "Naso", fr: "Nez" },
+  { emoji: "👄", de: "Mund", en: "Mouth", it: "Bocca", fr: "Bouche" },
+  { emoji: "🦷", de: "Zahn", en: "Tooth", it: "Dente", fr: "Dent" },
+  { emoji: "💪", de: "Muskel", en: "Muscle", it: "Muscolo", fr: "Muscle" },
+  { emoji: "🦶", de: "Fuss", en: "Foot", it: "Piede", fr: "Pied" },
+  { emoji: "✋", de: "Hand", en: "Hand", it: "Mano", fr: "Main" },
+  // === Berufe & Menschen ===
+  { emoji: "👩‍🚒", de: "Feuerwehrfrau", en: "Firefighter", it: "Pompiera", fr: "Pompière" },
+  { emoji: "👨‍🍳", de: "Koch", en: "Chef", it: "Cuoco", fr: "Cuisinier" },
+  { emoji: "👩‍🏫", de: "Lehrerin", en: "Teacher", it: "Insegnante", fr: "Enseignante" },
+  { emoji: "👨‍🔬", de: "Wissenschaftler", en: "Scientist", it: "Scienziato", fr: "Scientifique" },
+  { emoji: "👩‍🚀", de: "Astronautin", en: "Astronaut", it: "Astronauta", fr: "Astronaute" },
+  { emoji: "👮", de: "Polizist", en: "Police officer", it: "Poliziotto", fr: "Policier" },
+  { emoji: "👷", de: "Bauarbeiter", en: "Construction worker", it: "Operaio", fr: "Ouvrier" },
+  { emoji: "👨‍🌾", de: "Bauer", en: "Farmer", it: "Contadino", fr: "Fermier" },
+  { emoji: "🧑‍✈️", de: "Pilot", en: "Pilot", it: "Pilota", fr: "Pilote" },
+  { emoji: "👶", de: "Baby", en: "Baby", it: "Bambino", fr: "Bébé" },
+  // === Symbole & Sonstiges ===
+  { emoji: "🎵", de: "Musik", en: "Music", it: "Musica", fr: "Musique" },
+  { emoji: "💤", de: "Schlafen", en: "Sleep", it: "Dormire", fr: "Dormir" },
+  { emoji: "🔥", de: "Feuer", en: "Fire", it: "Fuoco", fr: "Feu" },
+  { emoji: "💧", de: "Wasser", en: "Water", it: "Acqua", fr: "Eau" },
+  { emoji: "🎃", de: "Kürbis", en: "Pumpkin", it: "Zucca", fr: "Citrouille" },
+  { emoji: "🎄", de: "Weihnachtsbaum", en: "Christmas tree", it: "Albero di Natale", fr: "Sapin de Noël" },
+  { emoji: "🎅", de: "Weihnachtsmann", en: "Santa Claus", it: "Babbo Natale", fr: "Père Noël" },
+  { emoji: "👻", de: "Gespenst", en: "Ghost", it: "Fantasma", fr: "Fantôme" },
+  { emoji: "🤖", de: "Roboter", en: "Robot", it: "Robot", fr: "Robot" },
+  { emoji: "👽", de: "Alien", en: "Alien", it: "Alieno", fr: "Extraterrestre" },
+  { emoji: "🧙", de: "Zauberer", en: "Wizard", it: "Mago", fr: "Sorcier" },
+  { emoji: "🧜‍♀️", de: "Meerjungfrau", en: "Mermaid", it: "Sirena", fr: "Sirène" },
+  { emoji: "🦸", de: "Superheld", en: "Superhero", it: "Supereroe", fr: "Super-héros" },
+  { emoji: "🏆", de: "Pokal", en: "Trophy", it: "Trofeo", fr: "Trophée" },
+  { emoji: "🎮", de: "Spielkonsole", en: "Game controller", it: "Videogioco", fr: "Manette" },
+  { emoji: "🧩", de: "Puzzle", en: "Puzzle", it: "Puzzle", fr: "Puzzle" },
+  { emoji: "🎲", de: "Würfel", en: "Dice", it: "Dado", fr: "Dé" },
+  { emoji: "🪁", de: "Drachen", en: "Kite", it: "Aquilone", fr: "Cerf-volant" },
+  { emoji: "🛸", de: "Ufo", en: "UFO", it: "UFO", fr: "OVNI" },
+  { emoji: "💰", de: "Geldsack", en: "Money bag", it: "Sacco di soldi", fr: "Sac d'argent" },
+  { emoji: "📮", de: "Briefkasten", en: "Mailbox", it: "Cassetta postale", fr: "Boîte aux lettres" },
+  { emoji: "🗺️", de: "Weltkarte", en: "World map", it: "Mappamondo", fr: "Carte du monde" },
+  { emoji: "🧭", de: "Kompass", en: "Compass", it: "Bussola", fr: "Boussole" },
+  { emoji: "⚓", de: "Anker", en: "Anchor", it: "Ancora", fr: "Ancre" },
+  { emoji: "🔭", de: "Teleskop", en: "Telescope", it: "Telescopio", fr: "Télescope" },
+  { emoji: "🔬", de: "Mikroskop", en: "Microscope", it: "Microscopio", fr: "Microscope" },
+  { emoji: "💊", de: "Tablette", en: "Pill", it: "Pillola", fr: "Pilule" },
+  { emoji: "🩹", de: "Pflaster", en: "Bandage", it: "Cerotto", fr: "Pansement" },
 ];
 
 const LANG_CODES = { de: "de-DE", en: "en-US", it: "it-IT", fr: "fr-FR" };
-const ROUNDS = 10;
+const ROUNDS = 20;
 
 // === STATE ===
 let lang = "";
@@ -637,6 +959,7 @@ let current = 0;
 let score = 0;
 let results = [];
 let answered = false;
+let availableVoices = {};
 
 // === DOM ===
 const startScreen = document.getElementById("start-screen");
@@ -650,14 +973,59 @@ const wordDisplay = document.getElementById("word-display");
 const emojiGrid = document.getElementById("emoji-grid");
 const feedback = document.getElementById("feedback");
 const speakMain = document.getElementById("speak-main");
+const speedSlider = document.getElementById("speed-slider");
+
+// === VOICE CHECK ===
+function checkVoices() {
+  const voices = speechSynthesis.getVoices();
+  const langs = { de: "de", en: "en", it: "it", fr: "fr" };
+  availableVoices = {};
+
+  for (const [key, prefix] of Object.entries(langs)) {
+    availableVoices[key] = voices.filter(v => v.lang.startsWith(prefix));
+  }
+
+  for (const [key, voiceList] of Object.entries(availableVoices)) {
+    const btn = document.getElementById("lang-" + key);
+    if (!btn) continue;
+    if (voiceList.length === 0) {
+      btn.disabled = true;
+      if (!btn.querySelector(".no-voice")) {
+        const hint = document.createElement("span");
+        hint.className = "no-voice";
+        hint.textContent = "Keine Stimme verfügbar";
+        btn.appendChild(hint);
+      }
+    } else {
+      btn.disabled = false;
+      const hint = btn.querySelector(".no-voice");
+      if (hint) hint.remove();
+    }
+  }
+}
+
+speechSynthesis.addEventListener("voiceschanged", checkVoices);
+checkVoices();
 
 // === SPEECH ===
+function getSpeed() {
+  return parseFloat(speedSlider.value);
+}
+
 function speakWord(word, langCode) {
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(word);
   u.lang = langCode;
-  u.rate = 0.8;
+  u.rate = getSpeed();
   u.pitch = 1.1;
+
+  // Try to pick a voice that matches the language
+  const prefix = langCode.substring(0, 2);
+  const matching = availableVoices[prefix] || [];
+  if (matching.length > 0) {
+    u.voice = matching[0];
+  }
+
   speechSynthesis.speak(u);
 }
 
@@ -712,9 +1080,13 @@ function renderRound() {
   // Speak the word
   setTimeout(() => speakWord(word, LANG_CODES[lang]), 300);
 
-  // Flag buttons - highlight active language
+  // Flag buttons - highlight active language, disable unavailable
   document.querySelectorAll(".flag-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.lang === lang);
+    const bLang = btn.dataset.lang;
+    btn.classList.toggle("active", bLang === lang);
+    const voices = availableVoices[bLang] || [];
+    btn.style.opacity = voices.length === 0 ? "0.3" : "1";
+    btn.style.pointerEvents = voices.length === 0 ? "none" : "auto";
   });
 
   // Generate decoys
