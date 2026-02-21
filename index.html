@@ -19,6 +19,8 @@
     --card4-glow: rgba(168, 85, 247, 0.3);
     --card5: #10b981;
     --card5-glow: rgba(16, 185, 129, 0.3);
+    --card6: #f59e0b;
+    --card6-glow: rgba(245, 158, 11, 0.3);
     --text: #f0f0f0;
     --text-dim: #a0a0b8;
   }
@@ -136,6 +138,7 @@
   .game-card:nth-child(3)::before { background: var(--card3); }
   .game-card:nth-child(4)::before { background: var(--card4); }
   .game-card:nth-child(5)::before { background: var(--card5); }
+  .game-card:nth-child(6)::before { background: var(--card6); }
 
   .game-card:hover {
     transform: translateY(-8px);
@@ -146,6 +149,7 @@
   .game-card:nth-child(3):hover { box-shadow: 0 20px 60px var(--card3-glow); }
   .game-card:nth-child(4):hover { box-shadow: 0 20px 60px var(--card4-glow); }
   .game-card:nth-child(5):hover { box-shadow: 0 20px 60px var(--card5-glow); }
+  .game-card:nth-child(6):hover { box-shadow: 0 20px 60px var(--card6-glow); }
 
   .game-card:active {
     transform: translateY(-4px) scale(0.98);
@@ -202,6 +206,10 @@
     background: rgba(16,185,129,0.15);
     color: var(--card5);
   }
+  .game-card:nth-child(6) .card-badge {
+    background: rgba(245,158,11,0.15);
+    color: var(--card6);
+  }
 
   /* Footer */
   .footer {
@@ -222,6 +230,7 @@
   .game-card:nth-child(3) { animation: fadeUp 0.6s ease 0.4s both; }
   .game-card:nth-child(4) { animation: fadeUp 0.6s ease 0.55s both; }
   .game-card:nth-child(5) { animation: fadeUp 0.6s ease 0.7s both; }
+  .game-card:nth-child(6) { animation: fadeUp 0.6s ease 0.85s both; }
 
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -290,6 +299,13 @@
       <div class="card-title">Buchstaben-Werkstatt</div>
       <div class="card-desc">Zeichne Buchstaben nach – mit dem Finger oder der Maus</div>
       <div class="card-badge">✍️ Schreiben lernen</div>
+    </a>
+
+    <a class="game-card" href="emoji-rechner.html">
+      <span class="card-emoji">🧮🔢</span>
+      <div class="card-title">Emoji-Rechner</div>
+      <div class="card-desc">Ein kleiner Taschenrechner mit lustigen Emojis</div>
+      <div class="card-badge">🔢 Rechnen</div>
     </a>
   </div>
 

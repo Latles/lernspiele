@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔢 Emoji-Rechner</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card-hover: #1e2d45;
+    --accent: #f59e0b;
+    --accent-glow: rgba(245, 158, 11, 0.3);
+    --text: #f0f0f0;
+    --text-dim: #a0a0b8;
+    --correct: #34d399;
+    --wrong: #f87171;
+    --btn-num: #1e2d45;
+    --btn-op: #2a1a4e;
+    --btn-eq: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(245, 158, 11, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: var(--surface);
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s ease;
+  }
+
+  .back-btn:hover {
+    background: var(--card-hover);
+    color: var(--text);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+    text-align: center;
+  }
+
+  .title-emoji {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+    animation: bounce 2s ease infinite;
+  }
+
+  h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  /* Display */
+  .display {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    text-align: right;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  .display-history {
+    font-size: 1rem;
+    color: var(--text-dim);
+    min-height: 1.4em;
+    word-break: break-all;
+    transition: all 0.2s ease;
+  }
+
+  .display-value {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    word-break: break-all;
+    transition: all 0.2s ease;
+  }
+
+  .display-value.pop {
+    animation: popIn 0.3s ease;
+  }
+
+  /* Button Grid */
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .btn {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 16px;
+    padding: 18px 8px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:active {
+    transform: scale(0.92);
+  }
+
+  /* Number buttons */
+  .btn-num {
+    background: var(--btn-num);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .btn-num:hover {
+    background: #253a54;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+
+  /* Operator buttons */
+  .btn-op {
+    background: var(--btn-op);
+    color: #c084fc;
+    border: 1px solid rgba(192,132,252,0.15);
+    font-size: 1.6rem;
+  }
+
+  .btn-op:hover {
+    background: #351f6e;
+    box-shadow: 0 4px 16px rgba(168,85,247,0.2);
+  }
+
+  .btn-op.active {
+    background: #5b21b6;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(168,85,247,0.4);
+  }
+
+  /* Equals button */
+  .btn-eq {
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: #fff;
+    border: none;
+    font-size: 1.8rem;
+  }
+
+  .btn-eq:hover {
+    box-shadow: 0 4px 20px var(--accent-glow);
+  }
+
+  /* Clear button */
+  .btn-clear {
+    background: rgba(248,113,113,0.15);
+    color: var(--wrong);
+    border: 1px solid rgba(248,113,113,0.15);
+  }
+
+  .btn-clear:hover {
+    background: rgba(248,113,113,0.25);
+  }
+
+  /* Wide button (span 2 columns) */
+  .btn-wide {
+    grid-column: span 2;
+  }
+
+  /* Emoji labels */
+  .btn .emoji-label {
+    display: block;
+    font-size: 0.65rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+    opacity: 0.5;
+    margin-top: 2px;
+  }
+
+  /* History */
+  .history-section {
+    margin-top: 28px;
+  }
+
+  .history-title {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    text-align: right;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .history-item .result {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .history-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .history-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .history-list::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+
+  .dn { display: none !important; }
+
+  @keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0.5; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  .shake {
+    animation: shakeX 0.4s ease;
+  }
+
+  @media (hover: none) {
+    .btn:active {
+      transform: scale(0.90);
+    }
+  }
+
+  @media (max-width: 360px) {
+    .btn {
+      padding: 14px 6px;
+      font-size: 1.3rem;
+    }
+    .display-value {
+      font-size: 2.2rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-btn" href="index.html">← Zurück</a>
+
+<div class="container">
+  <span class="title-emoji">🧮</span>
+  <h1>Emoji-Rechner</h1>
+  <p class="subtitle">Rechne mit lustigen Emojis! 🎉</p>
+
+  <!-- Display -->
+  <div class="display">
+    <div class="display-history" id="history-line"></div>
+    <div class="display-value" id="display">0</div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="buttons">
+    <button class="btn btn-clear" onclick="clearAll()">🗑️<span class="emoji-label">Löschen</span></button>
+    <button class="btn btn-clear" onclick="backspace()">⬅️<span class="emoji-label">Zurück</span></button>
+    <button class="btn btn-op" data-op="%" onclick="inputOp('%')">%</button>
+    <button class="btn btn-op" data-op="/" onclick="inputOp('/')">➗</button>
+
+    <button class="btn btn-num" onclick="inputNum('7')">7</button>
+    <button class="btn btn-num" onclick="inputNum('8')">8</button>
+    <button class="btn btn-num" onclick="inputNum('9')">9</button>
+    <button class="btn btn-op" data-op="*" onclick="inputOp('*')">✖️</button>
+
+    <button class="btn btn-num" onclick="inputNum('4')">4</button>
+    <button class="btn btn-num" onclick="inputNum('5')">5</button>
+    <button class="btn btn-num" onclick="inputNum('6')">6</button>
+    <button class="btn btn-op" data-op="-" onclick="inputOp('-')">➖</button>
+
+    <button class="btn btn-num" onclick="inputNum('1')">1</button>
+    <button class="btn btn-num" onclick="inputNum('2')">2</button>
+    <button class="btn btn-num" onclick="inputNum('3')">3</button>
+    <button class="btn btn-op" data-op="+" onclick="inputOp('+')">➕</button>
+
+    <button class="btn btn-num btn-wide" onclick="inputNum('0')">0</button>
+    <button class="btn btn-num" onclick="inputDot()">.</button>
+    <button class="btn btn-eq" onclick="calculate()">=</button>
+  </div>
+
+  <!-- History -->
+  <div class="history-section dn" id="history-section">
+    <div class="history-title">📝 Letzte Rechnungen</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<script>
+  var currentInput = '0';
+  var previousInput = '';
+  var operator = null;
+  var shouldReset = false;
+  var calcHistory = [];
+
+  var displayEl = document.getElementById('display');
+  var historyLine = document.getElementById('history-line');
+  var historySection = document.getElementById('history-section');
+  var historyList = document.getElementById('history-list');
+
+  function updateDisplay(animate) {
+    var formatted = currentInput;
+    // Format large numbers with spaces
+    if (formatted.indexOf('.') === -1 && formatted.length > 3 && !isNaN(formatted)) {
+      var parts = [];
+      var str = formatted.replace('-', '');
+      for (var i = str.length; i > 0; i -= 3) {
+        parts.unshift(str.slice(Math.max(0, i - 3), i));
+      }
+      formatted = (currentInput.charAt(0) === '-' ? '-' : '') + parts.join(' ');
+    }
+    displayEl.textContent = formatted;
+    if (animate) {
+      displayEl.classList.remove('pop');
+      void displayEl.offsetWidth;
+      displayEl.classList.add('pop');
+    }
+    // Auto-shrink for long numbers
+    if (currentInput.length > 10) {
+      displayEl.style.fontSize = '1.8rem';
+    } else if (currentInput.length > 7) {
+      displayEl.style.fontSize = '2.2rem';
+    } else {
+      displayEl.style.fontSize = '';
+    }
+  }
+
+  function updateHistoryLine() {
+    if (previousInput && operator) {
+      var opSymbol = { '+': '➕', '-': '➖', '*': '✖️', '/': '➗', '%': '%' }[operator] || operator;
+      historyLine.textContent = previousInput + ' ' + opSymbol;
+    } else {
+      historyLine.textContent = '';
+    }
+  }
+
+  function highlightOp() {
+    document.querySelectorAll('.btn-op').forEach(function(btn) {
+      btn.classList.toggle('active', btn.dataset.op === operator);
+    });
+  }
+
+  function inputNum(num) {
+    if (shouldReset) {
+      currentInput = '0';
+      shouldReset = false;
+    }
+    if (currentInput === '0' && num !== '.') {
+      currentInput = num;
+    } else if (currentInput === '-0') {
+      currentInput = '-' + num;
+    } else {
+      if (currentInput.replace('-', '').replace('.', '').length >= 12) return;
+      currentInput += num;
+    }
+    updateDisplay(false);
+  }
+
+  function inputDot() {
+    if (shouldReset) {
+      currentInput = '0';
+      shouldReset = false;
+    }
+    if (currentInput.indexOf('.') !== -1) return;
+    currentInput += '.';
+    updateDisplay(false);
+  }
+
+  function inputOp(op) {
+    if (operator && !shouldReset) {
+      calculate(true);
+    }
+    previousInput = currentInput;
+    operator = op;
+    shouldReset = true;
+    updateHistoryLine();
+    highlightOp();
+  }
+
+  function calculate(chained) {
+    if (!operator || !previousInput) return;
+
+    var a = parseFloat(previousInput);
+    var b = parseFloat(currentInput);
+    var result;
+
+    switch (operator) {
+      case '+': result = a + b; break;
+      case '-': result = a - b; break;
+      case '*': result = a * b; break;
+      case '/':
+        if (b === 0) {
+          showError();
+          return;
+        }
+        result = a / b;
+        break;
+      case '%': result = a % b; break;
+    }
+
+    // Round to avoid floating point issues
+    result = Math.round(result * 1e10) / 1e10;
+
+    var opSymbol = { '+': '➕', '-': '➖', '*': '✖️', '/': '➗', '%': '%' }[operator] || operator;
+    var entry = previousInput + ' ' + opSymbol + ' ' + currentInput + ' = ' + result;
+
+    if (!chained) {
+      addHistory(entry, result);
+    }
+
+    currentInput = String(result);
+    previousInput = '';
+    operator = null;
+    shouldReset = !chained;
+
+    updateDisplay(true);
+    updateHistoryLine();
+    highlightOp();
+  }
+
+  function showError() {
+    displayEl.textContent = '🚫 Geht nicht!';
+    displayEl.classList.add('shake');
+    setTimeout(function() {
+      displayEl.classList.remove('shake');
+    }, 400);
+    currentInput = '0';
+    previousInput = '';
+    operator = null;
+    shouldReset = true;
+    updateHistoryLine();
+    highlightOp();
+  }
+
+  function clearAll() {
+    currentInput = '0';
+    previousInput = '';
+    operator = null;
+    shouldReset = false;
+    updateDisplay(false);
+    updateHistoryLine();
+    highlightOp();
+  }
+
+  function backspace() {
+    if (shouldReset) return;
+    if (currentInput.length <= 1 || (currentInput.length === 2 && currentInput.charAt(0) === '-')) {
+      currentInput = '0';
+    } else {
+      currentInput = currentInput.slice(0, -1);
+    }
+    updateDisplay(false);
+  }
+
+  function addHistory(entry, result) {
+    calcHistory.unshift({ entry: entry, result: result });
+    if (calcHistory.length > 10) calcHistory.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historySection.classList.remove('dn');
+    historyList.innerHTML = '';
+    calcHistory.forEach(function(item) {
+      var div = document.createElement('div');
+      div.className = 'history-item';
+      div.innerHTML = item.entry.replace(
+        '= ' + item.result,
+        '= <span class="result">' + item.result + '</span>'
+      );
+      div.addEventListener('click', function() {
+        currentInput = String(item.result);
+        shouldReset = true;
+        updateDisplay(true);
+      });
+      div.style.cursor = 'pointer';
+      historyList.appendChild(div);
+    });
+  }
+
+  // Keyboard support
+  document.addEventListener('keydown', function(e) {
+    var key = e.key;
+    if (key >= '0' && key <= '9') {
+      inputNum(key);
+    } else if (key === '.') {
+      inputDot();
+    } else if (key === '+') {
+      inputOp('+');
+    } else if (key === '-') {
+      inputOp('-');
+    } else if (key === '*') {
+      inputOp('*');
+    } else if (key === '/') {
+      e.preventDefault();
+      inputOp('/');
+    } else if (key === '%') {
+      inputOp('%');
+    } else if (key === 'Enter' || key === '=') {
+      calculate();
+    } else if (key === 'Backspace') {
+      backspace();
+    } else if (key === 'Escape' || key === 'Delete') {
+      clearAll();
+    }
+  });
+
+  updateDisplay(false);
+</script>
+</body>
+</html>
