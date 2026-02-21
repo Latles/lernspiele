@@ -21,6 +21,18 @@
     --card5-glow: rgba(16, 185, 129, 0.3);
     --card6: #f59e0b;
     --card6-glow: rgba(245, 158, 11, 0.3);
+    --card7: #f472b6;
+    --card7-glow: rgba(244, 114, 182, 0.3);
+    --card8: #38bdf8;
+    --card8-glow: rgba(56, 189, 248, 0.3);
+    --card9: #fbbf24;
+    --card9-glow: rgba(251, 191, 36, 0.3);
+    --card10: #c084fc;
+    --card10-glow: rgba(192, 132, 252, 0.3);
+    --card11: #14b8a6;
+    --card11-glow: rgba(20, 184, 166, 0.3);
+    --card12: #84cc16;
+    --card12-glow: rgba(132, 204, 22, 0.3);
     --text: #f0f0f0;
     --text-dim: #a0a0b8;
   }
@@ -139,6 +151,12 @@
   .game-card:nth-child(4)::before { background: var(--card4); }
   .game-card:nth-child(5)::before { background: var(--card5); }
   .game-card:nth-child(6)::before { background: var(--card6); }
+  .game-card:nth-child(7)::before { background: var(--card7); }
+  .game-card:nth-child(8)::before { background: var(--card8); }
+  .game-card:nth-child(9)::before { background: var(--card9); }
+  .game-card:nth-child(10)::before { background: var(--card10); }
+  .game-card:nth-child(11)::before { background: var(--card11); }
+  .game-card:nth-child(12)::before { background: var(--card12); }
 
   .game-card:hover {
     transform: translateY(-8px);
@@ -150,6 +168,12 @@
   .game-card:nth-child(4):hover { box-shadow: 0 20px 60px var(--card4-glow); }
   .game-card:nth-child(5):hover { box-shadow: 0 20px 60px var(--card5-glow); }
   .game-card:nth-child(6):hover { box-shadow: 0 20px 60px var(--card6-glow); }
+  .game-card:nth-child(7):hover { box-shadow: 0 20px 60px var(--card7-glow); }
+  .game-card:nth-child(8):hover { box-shadow: 0 20px 60px var(--card8-glow); }
+  .game-card:nth-child(9):hover { box-shadow: 0 20px 60px var(--card9-glow); }
+  .game-card:nth-child(10):hover { box-shadow: 0 20px 60px var(--card10-glow); }
+  .game-card:nth-child(11):hover { box-shadow: 0 20px 60px var(--card11-glow); }
+  .game-card:nth-child(12):hover { box-shadow: 0 20px 60px var(--card12-glow); }
 
   .game-card:active {
     transform: translateY(-4px) scale(0.98);
@@ -210,6 +234,30 @@
     background: rgba(245,158,11,0.15);
     color: var(--card6);
   }
+  .game-card:nth-child(7) .card-badge {
+    background: rgba(244,114,182,0.15);
+    color: var(--card7);
+  }
+  .game-card:nth-child(8) .card-badge {
+    background: rgba(56,189,248,0.15);
+    color: var(--card8);
+  }
+  .game-card:nth-child(9) .card-badge {
+    background: rgba(251,191,36,0.15);
+    color: var(--card9);
+  }
+  .game-card:nth-child(10) .card-badge {
+    background: rgba(192,132,252,0.15);
+    color: var(--card10);
+  }
+  .game-card:nth-child(11) .card-badge {
+    background: rgba(20,184,166,0.15);
+    color: var(--card11);
+  }
+  .game-card:nth-child(12) .card-badge {
+    background: rgba(132,204,22,0.15);
+    color: var(--card12);
+  }
 
   /* Footer */
   .footer {
@@ -231,6 +279,12 @@
   .game-card:nth-child(4) { animation: fadeUp 0.6s ease 0.55s both; }
   .game-card:nth-child(5) { animation: fadeUp 0.6s ease 0.7s both; }
   .game-card:nth-child(6) { animation: fadeUp 0.6s ease 0.85s both; }
+  .game-card:nth-child(7) { animation: fadeUp 0.6s ease 1.0s both; }
+  .game-card:nth-child(8) { animation: fadeUp 0.6s ease 1.15s both; }
+  .game-card:nth-child(9) { animation: fadeUp 0.6s ease 1.3s both; }
+  .game-card:nth-child(10) { animation: fadeUp 0.6s ease 1.45s both; }
+  .game-card:nth-child(11) { animation: fadeUp 0.6s ease 1.6s both; }
+  .game-card:nth-child(12) { animation: fadeUp 0.6s ease 1.75s both; }
 
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -306,6 +360,48 @@
       <div class="card-title">Emoji-Rechner</div>
       <div class="card-desc">Ein kleiner Taschenrechner mit lustigen Emojis</div>
       <div class="card-badge">🔢 Rechnen</div>
+    </a>
+
+    <a class="game-card" href="mengen-match.html">
+      <span class="card-emoji">🎯🍎</span>
+      <div class="card-title">Mengen-Match</div>
+      <div class="card-desc">Zähle die Emojis und finde die richtige Zahl</div>
+      <div class="card-badge">🔢 Zählen</div>
+    </a>
+
+    <a class="game-card" href="zehnerfreunde.html">
+      <span class="card-emoji">🤝🔟</span>
+      <div class="card-title">Zehnerfreunde</div>
+      <div class="card-desc">Finde die Zahl, die zusammen 10 oder 20 ergibt</div>
+      <div class="card-badge">➕ Kopfrechnen</div>
+    </a>
+
+    <a class="game-card" href="groesser-kleiner-gleich.html">
+      <span class="card-emoji">🐊❓</span>
+      <div class="card-title">Größer, Kleiner, Gleich</div>
+      <div class="card-desc">Vergleiche zwei Zahlen und wähle &lt;, &gt; oder =</div>
+      <div class="card-badge">📊 Vergleichen</div>
+    </a>
+
+    <a class="game-card" href="wuerfelaugen.html">
+      <span class="card-emoji">🎲➕</span>
+      <div class="card-title">Würfelaugen</div>
+      <div class="card-desc">Würfle zwei Würfel und addiere ihre Augenzahlen</div>
+      <div class="card-badge">🎯 Addition</div>
+    </a>
+
+    <a class="game-card" href="rechenmauer.html">
+      <span class="card-emoji">🧱🔢</span>
+      <div class="card-title">Rechenmauer</div>
+      <div class="card-desc">Zwei Steine ergeben den Stein darüber – finde die Lücke!</div>
+      <div class="card-badge">🧩 Logik</div>
+    </a>
+
+    <a class="game-card" href="emoji-markt.html">
+      <span class="card-emoji">🛒💚</span>
+      <div class="card-title">Emoji-Markt</div>
+      <div class="card-desc">Kaufe Artikel und berechne die Gesamtsumme</div>
+      <div class="card-badge">🛍️ Einkaufen</div>
     </a>
   </div>
 
