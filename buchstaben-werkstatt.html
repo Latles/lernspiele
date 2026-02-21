@@ -296,6 +296,41 @@
     box-shadow: 0 0 12px var(--accent-glow);
   }
 
+  .canvas-tools {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tool-btn {
+    background: var(--surface);
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 8px 16px;
+    color: var(--text-dim);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .tool-btn:hover {
+    background: var(--card-hover);
+    color: var(--text);
+  }
+
+  .tool-btn:active {
+    transform: scale(0.95);
+  }
+
+  .tool-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(16, 185, 129, 0.1);
+  }
+
   .rate-section {
     display: none;
     animation: fadeUp 0.4s ease;
@@ -495,6 +530,9 @@
     .letter-prompt {
       font-size: 1.3rem;
     }
+    .tool-btn .tool-label {
+      display: none;
+    }
   }
 
   @media (hover: none) {
@@ -568,6 +606,12 @@
       <div class="color-picker" id="color-picker"></div>
     </div>
 
+    <div class="canvas-tools">
+      <button class="tool-btn" id="btn-lines">📏 <span class="tool-label">Linien</span></button>
+      <button class="tool-btn" id="btn-numbers">🔢 <span class="tool-label">Nummern</span></button>
+      <button class="tool-btn" id="btn-preview">▶️ <span class="tool-label">Vorschau</span></button>
+    </div>
+
     <div class="rate-section" id="rate-section">
       <div class="rate-label">Wie ist dein Buchstabe geworden?</div>
       <div class="rate-btns">
@@ -608,6 +652,9 @@ let lastX = 0;
 let lastY = 0;
 let penColor = "#10b981";
 let retriedLetters = new Set();
+let showGuideLines = false;
+let showStrokeNumbers = false;
+let isAnimating = false;
 
 const PEN_COLORS = [
   { color: "#10b981", label: "Grün" },
@@ -615,6 +662,199 @@ const PEN_COLORS = [
   { color: "#f472b6", label: "Pink" },
   { color: "#fbbf24", label: "Gelb" }
 ];
+
+const DESCENDER_LETTERS = new Set('gjpqy'.split(''));
+
+// Stroke paths for all 52 letters (A-Z, a-z)
+// Format: M=moveTo, L=lineTo, Q=quadratic bezier, C=cubic bezier
+// Coordinates normalized 0-1, multiplied by 640
+// Reference lines: cap-top=0.26, x-height=0.37, baseline=0.73, descender=0.87
+const STROKES = {
+  // === UPPERCASE (Basisschrift) ===
+  'A': [
+    "M .30,.73 L .50,.26 L .70,.73",
+    "M .36,.55 L .64,.55"
+  ],
+  'B': [
+    "M .34,.26 L .34,.73",
+    "M .34,.26 C .64,.26 .64,.50 .34,.50 C .68,.50 .68,.73 .34,.73"
+  ],
+  'C': [
+    "M .66,.34 C .56,.22 .32,.22 .32,.50 C .32,.78 .56,.78 .66,.66"
+  ],
+  'D': [
+    "M .33,.26 L .33,.73",
+    "M .33,.26 C .72,.26 .72,.73 .33,.73"
+  ],
+  'E': [
+    "M .34,.26 L .34,.73",
+    "M .34,.26 L .64,.26",
+    "M .34,.50 L .58,.50",
+    "M .34,.73 L .64,.73"
+  ],
+  'F': [
+    "M .36,.26 L .36,.73",
+    "M .36,.26 L .66,.26",
+    "M .36,.50 L .60,.50"
+  ],
+  'G': [
+    "M .66,.34 C .56,.22 .32,.22 .32,.50 C .32,.78 .56,.78 .66,.66 L .66,.52 L .52,.52"
+  ],
+  'H': [
+    "M .30,.26 L .30,.73",
+    "M .70,.26 L .70,.73",
+    "M .30,.50 L .70,.50"
+  ],
+  'I': [
+    "M .50,.26 L .50,.73"
+  ],
+  'J': [
+    "M .56,.26 L .56,.62 C .56,.76 .44,.76 .36,.66"
+  ],
+  'K': [
+    "M .33,.26 L .33,.73",
+    "M .65,.26 L .33,.52 L .65,.73"
+  ],
+  'L': [
+    "M .34,.26 L .34,.73 L .64,.73"
+  ],
+  'M': [
+    "M .24,.73 L .24,.26 L .50,.55 L .76,.26 L .76,.73"
+  ],
+  'N': [
+    "M .30,.73 L .30,.26 L .70,.73 L .70,.26"
+  ],
+  'O': [
+    "M .50,.26 C .74,.26 .74,.73 .50,.73 C .26,.73 .26,.26 .50,.26"
+  ],
+  'P': [
+    "M .34,.26 L .34,.73",
+    "M .34,.26 C .68,.26 .68,.52 .34,.52"
+  ],
+  'Q': [
+    "M .50,.26 C .74,.26 .74,.73 .50,.73 C .26,.73 .26,.26 .50,.26",
+    "M .58,.62 L .70,.78"
+  ],
+  'R': [
+    "M .34,.26 L .34,.73",
+    "M .34,.26 C .68,.26 .68,.52 .34,.52",
+    "M .48,.52 L .68,.73"
+  ],
+  'S': [
+    "M .62,.34 C .56,.22 .34,.22 .34,.38 C .34,.52 .66,.56 .66,.66 C .66,.78 .42,.80 .36,.68"
+  ],
+  'T': [
+    "M .28,.26 L .72,.26",
+    "M .50,.26 L .50,.73"
+  ],
+  'U': [
+    "M .30,.26 L .30,.60 C .30,.76 .70,.76 .70,.60 L .70,.26"
+  ],
+  'V': [
+    "M .28,.26 L .50,.73 L .72,.26"
+  ],
+  'W': [
+    "M .18,.26 L .34,.73 L .50,.42 L .66,.73 L .82,.26"
+  ],
+  'X': [
+    "M .30,.26 L .70,.73",
+    "M .70,.26 L .30,.73"
+  ],
+  'Y': [
+    "M .28,.26 L .50,.50",
+    "M .72,.26 L .50,.50 L .50,.73"
+  ],
+  'Z': [
+    "M .30,.26 L .70,.26 L .30,.73 L .70,.73"
+  ],
+  // === LOWERCASE (Basisschrift – viele Buchstaben in einem Zug) ===
+  'a': [
+    "M .62,.40 C .55,.28 .34,.30 .34,.55 C .34,.74 .55,.76 .62,.56 L .62,.73"
+  ],
+  'b': [
+    "M .36,.26 L .36,.73 C .66,.73 .66,.37 .36,.37"
+  ],
+  'c': [
+    "M .62,.42 C .52,.30 .36,.34 .36,.55 C .36,.72 .52,.76 .62,.66"
+  ],
+  'd': [
+    "M .62,.40 C .55,.28 .34,.30 .34,.55 C .34,.74 .55,.76 .62,.56 L .62,.26 L .62,.73"
+  ],
+  'e': [
+    "M .36,.54 L .62,.54 C .64,.34 .34,.30 .34,.55 C .34,.72 .50,.76 .62,.66"
+  ],
+  'f': [
+    "M .56,.30 C .50,.24 .42,.26 .42,.38 L .42,.73",
+    "M .34,.46 L .56,.46"
+  ],
+  'g': [
+    "M .62,.40 C .55,.28 .34,.30 .34,.55 C .34,.74 .55,.76 .62,.56 L .62,.80 C .62,.92 .36,.90 .34,.82"
+  ],
+  'h': [
+    "M .34,.26 L .34,.73 L .34,.45 C .34,.34 .64,.34 .64,.48 L .64,.73"
+  ],
+  'i': [
+    "M .50,.40 L .50,.73",
+    "M .50,.30 L .50,.31"
+  ],
+  'j': [
+    "M .52,.40 L .52,.78 C .52,.90 .38,.88 .36,.80",
+    "M .52,.30 L .52,.31"
+  ],
+  'k': [
+    "M .36,.26 L .36,.73",
+    "M .60,.37 L .36,.55 L .62,.73"
+  ],
+  'l': [
+    "M .50,.26 L .50,.73"
+  ],
+  'm': [
+    "M .22,.37 L .22,.73 L .22,.48 C .22,.34 .44,.34 .44,.48 L .44,.73 L .44,.48 C .44,.34 .72,.34 .72,.48 L .72,.73"
+  ],
+  'n': [
+    "M .34,.37 L .34,.73 L .34,.45 C .34,.34 .64,.34 .64,.48 L .64,.73"
+  ],
+  'o': [
+    "M .50,.37 C .66,.37 .66,.73 .50,.73 C .34,.73 .34,.37 .50,.37"
+  ],
+  'p': [
+    "M .36,.37 L .36,.87 L .36,.55 C .36,.37 .64,.37 .64,.55 C .64,.73 .36,.73 .36,.55"
+  ],
+  'q': [
+    "M .62,.40 C .55,.28 .34,.30 .34,.55 C .34,.74 .55,.76 .62,.56 L .62,.87"
+  ],
+  'r': [
+    "M .40,.37 L .40,.73",
+    "M .40,.50 C .40,.36 .56,.34 .62,.40"
+  ],
+  's': [
+    "M .60,.42 C .56,.32 .38,.32 .38,.46 C .38,.58 .62,.60 .60,.68 C .58,.78 .38,.78 .38,.68"
+  ],
+  't': [
+    "M .48,.28 L .48,.66 C .48,.76 .58,.76 .62,.70",
+    "M .36,.42 L .60,.42"
+  ],
+  'u': [
+    "M .34,.37 L .34,.60 C .34,.76 .62,.76 .62,.56 L .62,.73"
+  ],
+  'v': [
+    "M .30,.37 L .50,.73 L .70,.37"
+  ],
+  'w': [
+    "M .22,.37 L .34,.73 L .48,.50 L .62,.73 L .76,.37"
+  ],
+  'x': [
+    "M .34,.37 L .64,.73",
+    "M .64,.37 L .34,.73"
+  ],
+  'y': [
+    "M .30,.37 L .50,.65",
+    "M .68,.37 L .42,.87"
+  ],
+  'z': [
+    "M .34,.37 L .64,.37 L .34,.73 L .64,.73"
+  ]
+};
 
 // === DOM ===
 const startScreen = document.getElementById("start-screen");
@@ -629,6 +869,9 @@ const ctx = canvas.getContext("2d");
 const canvasWrap = document.getElementById("canvas-wrap");
 const rateSection = document.getElementById("rate-section");
 const colorPicker = document.getElementById("color-picker");
+const btnLines = document.getElementById("btn-lines");
+const btnNumbers = document.getElementById("btn-numbers");
+const btnPreview = document.getElementById("btn-preview");
 
 // === INIT COLOR PICKER ===
 function initColorPicker() {
@@ -691,6 +934,7 @@ function getCanvasPos(e) {
 }
 
 function startDraw(e) {
+  if (isAnimating) return;
   e.preventDefault();
   isDrawing = true;
   const pos = getCanvasPos(e);
@@ -743,9 +987,166 @@ canvas.addEventListener("touchmove", draw, { passive: false });
 canvas.addEventListener("touchend", endDraw, { passive: false });
 canvas.addEventListener("touchcancel", endDraw, { passive: false });
 
+// === STROKE PARSER ===
+function parseStroke(str) {
+  const commands = [];
+  const tokens = str.trim().split(/\s+/);
+  let i = 0;
+  while (i < tokens.length) {
+    const cmd = tokens[i++];
+    if (cmd === 'M' || cmd === 'L') {
+      const [x, y] = tokens[i++].split(',').map(Number);
+      commands.push({ type: cmd, x: x * 640, y: y * 640 });
+    } else if (cmd === 'Q') {
+      const [cx, cy] = tokens[i++].split(',').map(Number);
+      const [x, y] = tokens[i++].split(',').map(Number);
+      commands.push({ type: 'Q', cx: cx * 640, cy: cy * 640, x: x * 640, y: y * 640 });
+    } else if (cmd === 'C') {
+      const [c1x, c1y] = tokens[i++].split(',').map(Number);
+      const [c2x, c2y] = tokens[i++].split(',').map(Number);
+      const [x, y] = tokens[i++].split(',').map(Number);
+      commands.push({ type: 'C', c1x: c1x * 640, c1y: c1y * 640, c2x: c2x * 640, c2y: c2y * 640, x: x * 640, y: y * 640 });
+    }
+  }
+  return commands;
+}
+
+// Sample a parsed stroke into an array of {x,y} points for animation
+function sampleStroke(commands, numPerSegment) {
+  const points = [];
+  let cx = 0, cy = 0;
+  for (const cmd of commands) {
+    if (cmd.type === 'M') {
+      cx = cmd.x; cy = cmd.y;
+      points.push({ x: cx, y: cy });
+    } else if (cmd.type === 'L') {
+      const x0 = cx, y0 = cy;
+      for (let j = 1; j <= numPerSegment; j++) {
+        const t = j / numPerSegment;
+        points.push({ x: x0 + (cmd.x - x0) * t, y: y0 + (cmd.y - y0) * t });
+      }
+      cx = cmd.x; cy = cmd.y;
+    } else if (cmd.type === 'Q') {
+      const x0 = cx, y0 = cy;
+      for (let j = 1; j <= numPerSegment; j++) {
+        const t = j / numPerSegment;
+        const s = 1 - t;
+        points.push({
+          x: s * s * x0 + 2 * s * t * cmd.cx + t * t * cmd.x,
+          y: s * s * y0 + 2 * s * t * cmd.cy + t * t * cmd.y
+        });
+      }
+      cx = cmd.x; cy = cmd.y;
+    } else if (cmd.type === 'C') {
+      const x0 = cx, y0 = cy;
+      for (let j = 1; j <= numPerSegment; j++) {
+        const t = j / numPerSegment;
+        const s = 1 - t;
+        points.push({
+          x: s*s*s*x0 + 3*s*s*t*cmd.c1x + 3*s*t*t*cmd.c2x + t*t*t*cmd.x,
+          y: s*s*s*y0 + 3*s*s*t*cmd.c1y + 3*s*t*t*cmd.c2y + t*t*t*cmd.y
+        });
+      }
+      cx = cmd.x; cy = cmd.y;
+    }
+  }
+  return points;
+}
+
+// === GUIDE LINES ===
+function drawGuideLines(letter) {
+  const w = canvas.width;
+  const lines = [
+    { y: 0.258, dash: [12, 8], alpha: 0.08 },
+    { y: 0.373, dash: [12, 8], alpha: 0.12 },
+    { y: 0.730, dash: [],      alpha: 0.18 },
+    { y: 0.873, dash: [12, 8], alpha: 0.08 }
+  ];
+  const showKeller = DESCENDER_LETTERS.has(letter.toLowerCase());
+  ctx.save();
+  lines.forEach((line, idx) => {
+    if (idx === 3 && !showKeller) return;
+    const y = Math.round(line.y * canvas.height);
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(255, 255, 255, ${line.alpha})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash(line.dash);
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+// === STROKE NUMBERS ===
+function drawStrokeNumbers(letter) {
+  const strokeData = STROKES[letter];
+  if (!strokeData) return;
+  const r = 18;
+  const offsetAlong = 24; // offset circle along stroke direction
+
+  // Collect marker data
+  const markers = [];
+  strokeData.forEach((strokeStr, i) => {
+    const commands = parseStroke(strokeStr);
+    if (commands.length === 0) return;
+    const start = commands[0];
+    let dx = 0, dy = 0;
+    if (commands.length > 1) {
+      const next = commands[1];
+      if (next.type === 'L') { dx = next.x - start.x; dy = next.y - start.y; }
+      else if (next.type === 'Q') { dx = next.cx - start.x; dy = next.cy - start.y; }
+      else if (next.type === 'C') { dx = next.c1x - start.x; dy = next.c1y - start.y; }
+    }
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    dx /= len; dy /= len;
+    // Place marker slightly along stroke direction
+    markers.push({ x: start.x + dx * offsetAlong, y: start.y + dy * offsetAlong, dx, dy, idx: i });
+  });
+
+  markers.forEach(m => {
+    ctx.save();
+    // Circle
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.85)';
+    ctx.arc(m.x, m.y, r, 0, Math.PI * 2);
+    ctx.fill();
+    // Number
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 20px Fredoka, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(m.idx + 1), m.x, m.y);
+    // Arrow
+    const arrowDist = r + 12;
+    const ax = m.x + m.dx * arrowDist;
+    const ay = m.y + m.dy * arrowDist;
+    ctx.beginPath();
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.moveTo(m.x + m.dx * (r + 2), m.y + m.dy * (r + 2));
+    ctx.lineTo(ax, ay);
+    ctx.stroke();
+    const angle = Math.atan2(m.dy, m.dx);
+    const as = 8;
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.7)';
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - as * Math.cos(angle - 0.5), ay - as * Math.sin(angle - 0.5));
+    ctx.lineTo(ax - as * Math.cos(angle + 0.5), ay - as * Math.sin(angle + 0.5));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+}
+
 // === TEMPLATE LETTER ===
 function drawTemplate(letter) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (showGuideLines) drawGuideLines(letter);
 
   ctx.save();
   ctx.font = "bold 420px Fredoka, sans-serif";
@@ -754,6 +1155,106 @@ function drawTemplate(letter) {
   ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
   ctx.fillText(letter, canvas.width / 2, canvas.height / 2 + 15);
   ctx.restore();
+
+  if (showStrokeNumbers && !isAnimating) drawStrokeNumbers(letter);
+}
+
+// === ANIMATION ===
+function drawSampledStroke(points, upTo) {
+  if (upTo < 2) return;
+  ctx.save();
+  ctx.strokeStyle = 'rgba(52, 211, 153, 0.8)';
+  ctx.lineWidth = 10;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < upTo; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function startDemo() {
+  if (isAnimating) return;
+  const letter = letters[current];
+  const strokeData = STROKES[letter];
+  if (!strokeData) return;
+
+  isAnimating = true;
+  hasDrawn = false;
+  rateSection.classList.remove("show");
+
+  const sampledStrokes = strokeData.map(s => sampleStroke(parseStroke(s), 60));
+  let strokeIdx = 0;
+  let ptIdx = 0;
+  let pausing = false;
+  const speed = 3;
+
+  function drawFrame() {
+    drawTemplate(letter);
+    // Draw completed strokes
+    for (let s = 0; s < strokeIdx; s++) {
+      drawSampledStroke(sampledStrokes[s], sampledStrokes[s].length);
+    }
+    // Draw current stroke progress
+    if (strokeIdx < sampledStrokes.length) {
+      const stroke = sampledStrokes[strokeIdx];
+      drawSampledStroke(stroke, ptIdx);
+      // Green dot
+      if (ptIdx > 0 && ptIdx <= stroke.length) {
+        const pt = stroke[ptIdx - 1];
+        ctx.save();
+        ctx.beginPath();
+        ctx.fillStyle = '#10b981';
+        ctx.arc(pt.x, pt.y, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.fillStyle = 'white';
+        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+  }
+
+  function animLoop() {
+    if (strokeIdx >= sampledStrokes.length) {
+      setTimeout(() => {
+        isAnimating = false;
+        clearCanvas();
+      }, 600);
+      return;
+    }
+    if (pausing) return;
+
+    const stroke = sampledStrokes[strokeIdx];
+    ptIdx = Math.min(ptIdx + speed, stroke.length);
+    drawFrame();
+
+    if (ptIdx >= stroke.length) {
+      strokeIdx++;
+      ptIdx = 0;
+      if (strokeIdx < sampledStrokes.length) {
+        pausing = true;
+        setTimeout(() => {
+          pausing = false;
+          requestAnimationFrame(animLoop);
+        }, 300);
+      } else {
+        setTimeout(() => {
+          isAnimating = false;
+          clearCanvas();
+        }, 600);
+      }
+      return;
+    }
+    requestAnimationFrame(animLoop);
+  }
+
+  drawFrame();
+  requestAnimationFrame(animLoop);
 }
 
 function clearCanvas() {
@@ -853,6 +1354,23 @@ document.getElementById("btn-replay").addEventListener("click", () => {
 
 document.getElementById("btn-change-mode").addEventListener("click", () => {
   showScreen(startScreen);
+});
+
+// === TOOL TOGGLES ===
+btnLines.addEventListener("click", () => {
+  showGuideLines = !showGuideLines;
+  btnLines.classList.toggle("active", showGuideLines);
+  clearCanvas();
+});
+
+btnNumbers.addEventListener("click", () => {
+  showStrokeNumbers = !showStrokeNumbers;
+  btnNumbers.classList.toggle("active", showStrokeNumbers);
+  clearCanvas();
+});
+
+btnPreview.addEventListener("click", () => {
+  startDemo();
 });
 </script>
 
