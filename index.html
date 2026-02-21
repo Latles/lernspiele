@@ -17,6 +17,8 @@
     --card3-glow: rgba(6, 182, 212, 0.3);
     --card4: #a855f7;
     --card4-glow: rgba(168, 85, 247, 0.3);
+    --card5: #10b981;
+    --card5-glow: rgba(16, 185, 129, 0.3);
     --text: #f0f0f0;
     --text-dim: #a0a0b8;
   }
@@ -133,6 +135,7 @@
   .game-card:nth-child(2)::before { background: var(--card2); }
   .game-card:nth-child(3)::before { background: var(--card3); }
   .game-card:nth-child(4)::before { background: var(--card4); }
+  .game-card:nth-child(5)::before { background: var(--card5); }
 
   .game-card:hover {
     transform: translateY(-8px);
@@ -142,6 +145,7 @@
   .game-card:nth-child(2):hover { box-shadow: 0 20px 60px var(--card2-glow); }
   .game-card:nth-child(3):hover { box-shadow: 0 20px 60px var(--card3-glow); }
   .game-card:nth-child(4):hover { box-shadow: 0 20px 60px var(--card4-glow); }
+  .game-card:nth-child(5):hover { box-shadow: 0 20px 60px var(--card5-glow); }
 
   .game-card:active {
     transform: translateY(-4px) scale(0.98);
@@ -194,6 +198,10 @@
     background: rgba(168,85,247,0.15);
     color: var(--card4);
   }
+  .game-card:nth-child(5) .card-badge {
+    background: rgba(16,185,129,0.15);
+    color: var(--card5);
+  }
 
   /* Footer */
   .footer {
@@ -213,6 +221,7 @@
   .game-card:nth-child(2) { animation: fadeUp 0.6s ease 0.25s both; }
   .game-card:nth-child(3) { animation: fadeUp 0.6s ease 0.4s both; }
   .game-card:nth-child(4) { animation: fadeUp 0.6s ease 0.55s both; }
+  .game-card:nth-child(5) { animation: fadeUp 0.6s ease 0.7s both; }
 
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-20px); }
@@ -274,6 +283,13 @@
       <div class="card-title">Emoji Hörspiel</div>
       <div class="card-desc">Höre ein Wort und finde das passende Emoji</div>
       <div class="card-badge">👂 Hören & Lernen</div>
+    </a>
+
+    <a class="game-card" href="buchstaben-werkstatt.html">
+      <span class="card-emoji">✏️🔤</span>
+      <div class="card-title">Buchstaben-Werkstatt</div>
+      <div class="card-desc">Zeichne Buchstaben nach – mit dem Finger oder der Maus</div>
+      <div class="card-badge">✍️ Schreiben lernen</div>
     </a>
   </div>
 
