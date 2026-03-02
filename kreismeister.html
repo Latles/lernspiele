@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>⭕ Kreismeister</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card-hover: #1e2d45;
+    --accent: #818cf8;
+    --accent-glow: rgba(129, 140, 248, 0.3);
+    --accent-light: #a5b4fc;
+    --text: #f0f0f0;
+    --text-dim: #a0a0b8;
+    --correct: #34d399;
+    --wrong: #f87171;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(129, 140, 248, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 80%, rgba(129, 140, 248, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .back-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: var(--surface);
+    color: var(--text-dim);
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 10;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.2s ease;
+  }
+
+  .back-btn:hover {
+    background: var(--card-hover);
+    color: var(--text);
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 60px 20px 40px;
+    text-align: center;
+  }
+
+  .game-icon {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 16px;
+    animation: bounce 2s ease infinite;
+  }
+
+  h1 {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 18px 48px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+
+  .start-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px var(--accent-glow);
+  }
+
+  .start-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 0 4px;
+  }
+
+  .hud-item {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .hud-item span {
+    color: var(--accent-light);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--surface);
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* Canvas area */
+  .canvas-wrap {
+    position: relative;
+    background: var(--surface);
+    border-radius: 24px;
+    border: 2px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+    margin-bottom: 20px;
+    aspect-ratio: 1;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .canvas-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+  }
+
+  .canvas-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .canvas-hint .hint-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .canvas-hint .hint-text {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+  }
+
+  .canvas-hint.hidden { opacity: 0; }
+
+  /* Score display */
+  .score-display {
+    margin: 16px 0 24px;
+    animation: popIn 0.5s ease;
+  }
+
+  .score-percent {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 4rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .score-label {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+
+  .score-emoji {
+    font-size: 3rem;
+    display: block;
+    margin-top: 8px;
+  }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .btn-retry, .btn-next {
+    border: none;
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-retry {
+    background: var(--surface);
+    color: var(--text-dim);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .btn-retry:hover { background: var(--card-hover); color: var(--text); }
+
+  .btn-next {
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    color: #fff;
+    box-shadow: 0 6px 20px var(--accent-glow);
+  }
+
+  .btn-next:hover { transform: translateY(-2px); }
+  .btn-next:active, .btn-retry:active { transform: scale(0.95); }
+
+  /* End screen */
+  .final-score {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin: 16px 0 8px;
+  }
+
+  .final-label {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .final-emoji {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .rounds-summary {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+  }
+
+  .round-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-dim);
+  }
+
+  .dn { display: none; }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes popIn {
+    0% { opacity: 0; transform: scale(0.6); }
+    70% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+
+  @keyframes drawPulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  .screen { animation: fadeUp 0.5s ease; }
+
+  /* Ghost circle guide */
+  .ghost-circle {
+    position: absolute;
+    border: 2px dashed rgba(129, 140, 248, 0.15);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: drawPulse 3s ease infinite;
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 50px 12px 30px; }
+    .canvas-wrap { border-radius: 20px; }
+    .score-percent { font-size: 3rem; }
+    .final-score { font-size: 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<a class="back-btn" href="index.html">← Zurück</a>
+
+<div class="container">
+
+  <!-- START SCREEN -->
+  <div id="start-screen" class="screen">
+    <span class="game-icon">⭕</span>
+    <h1>Kreismeister</h1>
+    <p class="subtitle">Zeichne einen möglichst perfekten Kreis!<br>5 Runden – wie nah kommst du an 100%?</p>
+    <button class="start-btn" onclick="startGame()">Los geht's!</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="screen dn">
+    <div class="hud">
+      <div class="hud-item">Runde <span id="round-num">1</span>/5</div>
+      <div class="hud-item">Schnitt: <span id="avg-score">–</span></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="draw-canvas"></canvas>
+      <div class="canvas-hint" id="canvas-hint">
+        <span class="hint-icon">👆</span>
+        <span class="hint-text">Zeichne einen Kreis!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SCREEN (per round) -->
+  <div id="result-screen" class="screen dn">
+    <div class="score-display">
+      <div class="score-percent" id="score-text">95%</div>
+      <div class="score-label" id="score-label">Sehr gut!</div>
+      <span class="score-emoji" id="score-emoji">🎯</span>
+    </div>
+    <div class="canvas-wrap" id="result-canvas-wrap">
+      <canvas id="result-canvas"></canvas>
+    </div>
+    <div class="action-row">
+      <button class="btn-retry" onclick="retryRound()">Nochmal</button>
+      <button class="btn-next" id="btn-next" onclick="nextRound()">Weiter →</button>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen" class="screen dn">
+    <span class="game-icon">🏆</span>
+    <h1>Geschafft!</h1>
+    <div class="final-score" id="final-score">92%</div>
+    <div class="final-label">Durchschnitt über 5 Runden</div>
+    <span class="final-emoji" id="final-emoji">🌟</span>
+    <div class="rounds-summary" id="rounds-summary"></div>
+    <div class="action-row">
+      <button class="btn-retry" onclick="startGame()">Nochmal spielen</button>
+      <button class="btn-next" onclick="location.href='index.html'">Zur Übersicht</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TOTAL_ROUNDS = 5;
+const MIN_POINTS = 20;
+
+let currentRound = 0;
+let scores = [];
+let points = [];
+let isDrawing = false;
+let hasDrawn = false;
+
+const drawCanvas = document.getElementById('draw-canvas');
+const drawCtx = drawCanvas.getContext('2d');
+const resultCanvas = document.getElementById('result-canvas');
+const resultCtx = resultCanvas.getContext('2d');
+
+function show(id) {
+  ['start-screen','game-screen','result-screen','end-screen'].forEach(s => {
+    document.getElementById(s).classList.add('dn');
+  });
+  const el = document.getElementById(id);
+  el.classList.remove('dn');
+  el.style.animation = 'none';
+  el.offsetHeight;
+  el.style.animation = '';
+}
+
+function startGame() {
+  currentRound = 0;
+  scores = [];
+  startRound();
+}
+
+function startRound() {
+  currentRound++;
+  points = [];
+  isDrawing = false;
+  hasDrawn = false;
+
+  document.getElementById('round-num').textContent = currentRound;
+  document.getElementById('progress').style.width = ((currentRound - 1) / TOTAL_ROUNDS * 100) + '%';
+  updateAvg();
+
+  show('game-screen');
+  document.getElementById('canvas-hint').classList.remove('hidden');
+  resizeCanvas(drawCanvas);
+  clearCanvas(drawCtx, drawCanvas);
+}
+
+function resizeCanvas(canvas) {
+  const wrap = canvas.parentElement;
+  const size = wrap.clientWidth;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function clearCanvas(ctx, canvas) {
+  const dpr = window.devicePixelRatio || 1;
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+}
+
+function getPos(e, canvas) {
+  const rect = canvas.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  return {
+    x: t.clientX - rect.left,
+    y: t.clientY - rect.top
+  };
+}
+
+// Drawing events
+drawCanvas.addEventListener('mousedown', startDraw);
+drawCanvas.addEventListener('mousemove', draw);
+drawCanvas.addEventListener('mouseup', endDraw);
+drawCanvas.addEventListener('mouseleave', endDraw);
+drawCanvas.addEventListener('touchstart', startDraw, { passive: false });
+drawCanvas.addEventListener('touchmove', draw, { passive: false });
+drawCanvas.addEventListener('touchend', endDraw);
+drawCanvas.addEventListener('touchcancel', endDraw);
+
+function startDraw(e) {
+  e.preventDefault();
+  if (hasDrawn) return;
+  isDrawing = true;
+  points = [];
+  document.getElementById('canvas-hint').classList.add('hidden');
+  clearCanvas(drawCtx, drawCanvas);
+
+  const pos = getPos(e, drawCanvas);
+  points.push(pos);
+
+  drawCtx.beginPath();
+  drawCtx.strokeStyle = 'rgba(129, 140, 248, 0.9)';
+  drawCtx.lineWidth = 3.5;
+  drawCtx.lineCap = 'round';
+  drawCtx.lineJoin = 'round';
+  drawCtx.moveTo(pos.x, pos.y);
+}
+
+function draw(e) {
+  e.preventDefault();
+  if (!isDrawing) return;
+  const pos = getPos(e, drawCanvas);
+  points.push(pos);
+  drawCtx.lineTo(pos.x, pos.y);
+  drawCtx.stroke();
+  drawCtx.beginPath();
+  drawCtx.moveTo(pos.x, pos.y);
+}
+
+function endDraw(e) {
+  if (!isDrawing) return;
+  isDrawing = false;
+
+  if (points.length < MIN_POINTS) {
+    hasDrawn = false;
+    clearCanvas(drawCtx, drawCanvas);
+    document.getElementById('canvas-hint').classList.remove('hidden');
+    return;
+  }
+
+  hasDrawn = true;
+  const score = evaluateCircle(points);
+  scores.push(score);
+  showResult(score);
+}
+
+function evaluateCircle(pts) {
+  // Find centroid
+  let cx = 0, cy = 0;
+  for (const p of pts) { cx += p.x; cy += p.y; }
+  cx /= pts.length;
+  cy /= pts.length;
+
+  // Calculate distances from centroid
+  const distances = pts.map(p => Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2));
+  const avgR = distances.reduce((a, b) => a + b, 0) / distances.length;
+
+  if (avgR < 15) return 0;
+
+  // Calculate deviation from perfect circle
+  const deviations = distances.map(d => Math.abs(d - avgR));
+  const avgDev = deviations.reduce((a, b) => a + b, 0) / deviations.length;
+  const maxDev = Math.max(...deviations);
+
+  // Check how closed the shape is (start should meet end)
+  const startEnd = Math.sqrt((pts[0].x - pts[pts.length - 1].x) ** 2 + (pts[0].y - pts[pts.length - 1].y) ** 2);
+  const closedPenalty = Math.min(startEnd / avgR, 1) * 15;
+
+  // Check uniformity of angle distribution
+  const angles = pts.map(p => Math.atan2(p.y - cy, p.x - cx));
+  const sortedAngles = [...angles].sort((a, b) => a - b);
+  let maxGap = 0;
+  for (let i = 1; i < sortedAngles.length; i++) {
+    maxGap = Math.max(maxGap, sortedAngles[i] - sortedAngles[i - 1]);
+  }
+  // Also check wrap-around gap
+  maxGap = Math.max(maxGap, (2 * Math.PI) - (sortedAngles[sortedAngles.length - 1] - sortedAngles[0]));
+  const gapPenalty = Math.max(0, (maxGap - Math.PI / 2) / Math.PI) * 20;
+
+  // Score components
+  const avgDevScore = Math.max(0, 100 - (avgDev / avgR) * 200);
+  const maxDevScore = Math.max(0, 100 - (maxDev / avgR) * 100);
+
+  let rawScore = avgDevScore * 0.5 + maxDevScore * 0.3 + 20 - closedPenalty - gapPenalty;
+  rawScore = Math.max(0, Math.min(100, rawScore));
+
+  return Math.round(rawScore);
+}
+
+function showResult(score) {
+  show('result-screen');
+  resizeCanvas(resultCanvas);
+
+  document.getElementById('score-text').textContent = score + '%';
+
+  let label, emoji, color;
+  if (score >= 95) { label = 'Unglaublich!'; emoji = '🤩'; color = '#34d399'; }
+  else if (score >= 85) { label = 'Ausgezeichnet!'; emoji = '🌟'; color = '#34d399'; }
+  else if (score >= 75) { label = 'Sehr gut!'; emoji = '🎯'; color = '#818cf8'; }
+  else if (score >= 60) { label = 'Ganz okay!'; emoji = '👍'; color = '#f59e0b'; }
+  else if (score >= 40) { label = 'Naja...'; emoji = '😅'; color = '#f59e0b'; }
+  else { label = 'Übung macht den Meister!'; emoji = '💪'; color = '#f87171'; }
+
+  document.getElementById('score-label').textContent = label;
+  document.getElementById('score-emoji').textContent = emoji;
+  document.getElementById('score-text').style.color = color;
+
+  document.getElementById('btn-next').textContent = currentRound >= TOTAL_ROUNDS ? 'Ergebnis →' : 'Weiter →';
+
+  updateAvg();
+  drawResult(score);
+}
+
+function drawResult(score) {
+  const ctx = resultCtx;
+  const canvas = resultCanvas;
+  const dpr = window.devicePixelRatio || 1;
+  const size = canvas.width / dpr;
+
+  clearCanvas(ctx, canvas);
+
+  // Calculate the perfect circle from user's points
+  let cx = 0, cy = 0;
+  for (const p of points) { cx += p.x; cy += p.y; }
+  cx /= points.length;
+  cy /= points.length;
+  const distances = points.map(p => Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2));
+  const avgR = distances.reduce((a, b) => a + b, 0) / distances.length;
+
+  // Draw perfect circle (ghost)
+  ctx.beginPath();
+  ctx.arc(cx, cy, avgR, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(129, 140, 248, 0.2)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 6]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw user's circle
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  const hue = score >= 75 ? 160 : score >= 50 ? 45 : 0;
+  const sat = score >= 75 ? '70%' : '80%';
+  const light = '60%';
+  ctx.strokeStyle = `hsl(${hue}, ${sat}, ${light})`;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // Draw center dot
+  ctx.beginPath();
+  ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(129, 140, 248, 0.5)';
+  ctx.fill();
+}
+
+function retryRound() {
+  scores.pop();
+  startRound();
+}
+
+function nextRound() {
+  if (currentRound >= TOTAL_ROUNDS) {
+    showEnd();
+  } else {
+    startRound();
+  }
+}
+
+function updateAvg() {
+  const el = document.getElementById('avg-score');
+  if (scores.length === 0) { el.textContent = '–'; return; }
+  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  el.textContent = avg + '%';
+}
+
+function showEnd() {
+  show('end-screen');
+  const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  document.getElementById('final-score').textContent = avg + '%';
+
+  let emoji;
+  if (avg >= 95) emoji = '🤩';
+  else if (avg >= 85) emoji = '🏆';
+  else if (avg >= 75) emoji = '🌟';
+  else if (avg >= 60) emoji = '👍';
+  else if (avg >= 40) emoji = '😅';
+  else emoji = '💪';
+  document.getElementById('final-emoji').textContent = emoji;
+
+  const summary = document.getElementById('rounds-summary');
+  summary.innerHTML = '';
+  scores.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'round-dot';
+    dot.textContent = s + '%';
+    if (s >= 75) dot.style.borderColor = 'var(--correct)';
+    else if (s >= 50) dot.style.borderColor = 'var(--accent)';
+    else dot.style.borderColor = 'var(--wrong)';
+    if (s >= 75) dot.style.color = 'var(--correct)';
+    else if (s >= 50) dot.style.color = 'var(--accent-light)';
+    else dot.style.color = 'var(--wrong)';
+    summary.appendChild(dot);
+  });
+
+  document.getElementById('progress').style.width = '100%';
+}
+
+// Handle resize
+window.addEventListener('resize', () => {
+  if (!document.getElementById('game-screen').classList.contains('dn')) {
+    resizeCanvas(drawCanvas);
+    clearCanvas(drawCtx, drawCanvas);
+    points = [];
+    hasDrawn = false;
+    document.getElementById('canvas-hint').classList.remove('hidden');
+  }
+});
+</script>
+</body>
+</html>
