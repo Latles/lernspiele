@@ -16,6 +16,12 @@
     --text-dim: #a0a0b8;
     --correct: #34d399;
     --wrong: #f87171;
+
+    --mortar: #cfc6b8;
+    --mortar-dark: #a99f90;
+    --gap: 7px;
+    --bw: clamp(78px, calc((100vw - 110px) / 3), 124px);
+    --bh: calc(var(--bw) * 0.5);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,7 +40,7 @@
     inset: 0;
     background:
       radial-gradient(ellipse at 45% 30%, rgba(20, 184, 166, 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 55% 70%, rgba(20, 184, 166, 0.05) 0%, transparent 50%);
+      radial-gradient(ellipse at 55% 70%, rgba(200, 85, 61, 0.07) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
@@ -54,7 +60,6 @@
     border: 1px solid rgba(255,255,255,0.08);
     transition: all 0.2s ease;
   }
-
   .back-btn:hover { background: var(--card-hover); color: var(--text); }
 
   .container {
@@ -62,25 +67,21 @@
     z-index: 1;
     max-width: 560px;
     margin: 0 auto;
-    padding: 60px 20px 80px;
+    padding: 70px 20px 80px;
     text-align: center;
   }
 
-  #start-screen { animation: fadeUp 0.6s ease; }
+  .dn { display: none !important; }
 
-  .game-icon {
-    font-size: 4rem;
-    display: block;
-    margin-bottom: 16px;
-    animation: bounce 2s ease infinite;
-  }
+  /* ---------- Start ---------- */
+  #start-screen { animation: fadeUp 0.6s ease; }
 
   h1 {
     font-family: 'Fredoka', sans-serif;
     font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 8px;
-    background: linear-gradient(135deg, var(--accent), #2dd4bf);
+    margin: 18px 0 8px;
+    background: linear-gradient(135deg, #e07a5f, #f2a65a);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -88,12 +89,12 @@
 
   .subtitle {
     color: var(--text-dim);
-    font-size: 1.1rem;
-    margin-bottom: 40px;
+    font-size: 1.05rem;
+    margin-bottom: 32px;
     line-height: 1.5;
   }
 
-  .btn-start {
+  .btn-start, .btn-primary {
     background: linear-gradient(135deg, var(--accent), #2dd4bf);
     border: none;
     border-radius: 16px;
@@ -105,24 +106,24 @@
     cursor: pointer;
     transition: all 0.2s ease;
   }
+  .btn-start:hover, .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 24px var(--accent-glow); }
+  .btn-start:active, .btn-primary:active { transform: scale(0.95); }
 
-  .btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 24px var(--accent-glow); }
-
+  /* ---------- Fortschritt ---------- */
   .progress-bar-wrap {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
-
-  .progress-text {
+  .progress-text, .score-display {
     font-family: 'Fredoka', sans-serif;
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-dim);
     white-space: nowrap;
   }
-
+  .progress-text { color: var(--text-dim); }
+  .score-display { color: var(--accent); }
   .progress-bar {
     flex: 1;
     height: 8px;
@@ -130,7 +131,6 @@
     border-radius: 4px;
     overflow: hidden;
   }
-
   .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, var(--accent), #2dd4bf);
@@ -138,172 +138,193 @@
     transition: width 0.4s ease;
   }
 
-  .score-display {
-    font-family: 'Fredoka', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-
-  .wall-card {
-    background: var(--surface);
-    border-radius: 20px;
-    padding: 28px 24px;
-    margin-bottom: 24px;
+  /* ---------- Baustelle ---------- */
+  .site {
+    background: linear-gradient(180deg, #1d2b4a 0%, #223559 70%, #2a3f63 100%);
+    border-radius: 22px;
+    padding: 30px 12px 0;
     border: 1px solid rgba(255,255,255,0.06);
-    animation: popIn 0.4s ease;
+    overflow: hidden;
+    position: relative;
   }
 
-  .wall-row {
+  .hint {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    margin-bottom: 22px;
+  }
+
+  .wall {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--gap);
+    position: relative;
+    z-index: 1;
+  }
+
+  .row {
     display: flex;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: var(--gap);
   }
 
-  .stone {
-    width: 70px;
-    height: 70px;
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(20, 184, 166, 0.1));
-    border: 2px solid var(--accent);
-    border-radius: 10px;
+  /* Ziegelstein */
+  .brick {
+    --h: 12;
+    --l: 46%;
+    width: var(--bw);
+    height: var(--bh);
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Fredoka', sans-serif;
-    font-size: 1.8rem;
+    font-size: calc(var(--bh) * 0.56);
     font-weight: 700;
+    color: #fff8f0;
+    text-shadow: 0 2px 0 rgba(70, 20, 10, 0.55);
+    position: relative;
+    background-color: hsl(var(--h) 55% var(--l));
+    background-image:
+      radial-gradient(rgba(60, 15, 5, 0.22) 1px, transparent 1.6px),
+      radial-gradient(rgba(255, 230, 210, 0.13) 1px, transparent 1.6px),
+      linear-gradient(180deg, rgba(255,255,255,0.10), rgba(0,0,0,0.18));
+    background-size: 9px 8px, 13px 11px, 100% 100%;
+    background-position: 0 0, 5px 4px, 0 0;
+    box-shadow:
+      0 0 0 var(--gap) var(--mortar),
+      inset 0 2px 0 rgba(255, 220, 200, 0.28),
+      inset 0 -4px 0 rgba(60, 15, 5, 0.28),
+      inset 3px 0 0 rgba(255, 220, 200, 0.08),
+      inset -3px 0 0 rgba(60, 15, 5, 0.15);
+    animation: brickIn 0.45s cubic-bezier(.2,.9,.3,1.25) both;
+  }
+
+  /* Loch in der Mauer */
+  .brick.hole {
+    background: #0f1626;
+    box-shadow:
+      0 0 0 var(--gap) var(--mortar),
+      inset 0 6px 14px rgba(0,0,0,0.85),
+      inset 0 -2px 6px rgba(0,0,0,0.5);
     color: var(--accent);
+    text-shadow: 0 0 14px var(--accent-glow);
+  }
+  .brick.hole span { animation: pulse 1.4s ease-in-out infinite; }
+
+  .brick.placed { animation: brickDrop 0.5s cubic-bezier(.3,1.4,.5,1) both; }
+  .brick.placed.correct {
+    box-shadow:
+      0 0 0 var(--gap) var(--mortar),
+      0 0 0 calc(var(--gap) + 3px) var(--correct),
+      0 0 22px 6px rgba(52, 211, 153, 0.45),
+      inset 0 2px 0 rgba(255, 220, 200, 0.28),
+      inset 0 -4px 0 rgba(60, 15, 5, 0.28);
+    z-index: 2;
+  }
+  .brick.placed.wrong {
+    box-shadow:
+      0 0 0 var(--gap) var(--mortar),
+      0 0 0 calc(var(--gap) + 3px) var(--wrong),
+      inset 0 2px 0 rgba(255, 220, 200, 0.28),
+      inset 0 -4px 0 rgba(60, 15, 5, 0.28);
+    z-index: 2;
+  }
+  .wall.shake { animation: shakeX 0.45s ease; }
+
+  /* Boden */
+  .ground {
+    margin: calc(var(--gap) + 2px) -12px 0;
+    height: 34px;
+    background:
+      linear-gradient(180deg, #4ade80 0, #22a35a 7px, #6b4a2f 7px, #5a3d26 100%);
+    position: relative;
+  }
+  .ground::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 12px; bottom: 0;
+    background: radial-gradient(rgba(0,0,0,0.18) 1.5px, transparent 2px) 0 0 / 11px 9px;
   }
 
-  .stone.empty {
-    border-style: dashed;
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .stone.empty:hover {
-    background: rgba(20, 184, 166, 0.15);
-    border-color: var(--correct);
-  }
-
-  .stone.correct {
-    background: rgba(52, 211, 153, 0.15);
-    border-color: var(--correct);
-    color: var(--correct);
-  }
-
-  .stone.wrong {
-    background: rgba(248, 113, 113, 0.12);
-    border-color: var(--wrong);
-    color: var(--wrong);
-  }
-
-  .stone-spacing { width: 35px; }
-
+  /* ---------- Eingabe ---------- */
   .input-row {
     display: flex;
     gap: 12px;
     justify-content: center;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 24px;
   }
 
   #answer-input {
-    width: 80px;
-    padding: 10px;
+    width: 110px;
+    padding: 12px;
     font-family: 'Fredoka', sans-serif;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     border: 2px solid var(--accent);
-    border-radius: 10px;
+    border-radius: 14px;
     background: rgba(20, 184, 166, 0.1);
-    color: var(--accent);
+    color: var(--text);
     text-align: center;
+    -moz-appearance: textfield;
   }
-
+  #answer-input::-webkit-outer-spin-button,
+  #answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   #answer-input:focus {
     outline: none;
     border-color: var(--correct);
-    box-shadow: 0 0 12px rgba(52, 211, 153, 0.3);
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.3);
   }
 
   .btn-submit {
     background: linear-gradient(135deg, var(--accent), #2dd4bf);
     border: none;
-    border-radius: 10px;
-    padding: 10px 24px;
+    border-radius: 14px;
+    padding: 14px 26px;
     color: white;
-    font-family: 'Nunito', sans-serif;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 1.3rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
   }
-
   .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
-  .btn-submit:disabled { opacity: 0.6; cursor: default; }
+  .btn-submit:active { transform: scale(0.95); }
+  .btn-submit:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: none; }
 
   .feedback {
     margin-top: 16px;
+    min-height: 1.6em;
     font-family: 'Fredoka', sans-serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 600;
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-
   .feedback.show { opacity: 1; }
   .feedback.is-correct { color: var(--correct); }
   .feedback.is-wrong { color: var(--wrong); }
 
+  /* ---------- Ergebnis ---------- */
   #result-screen { animation: fadeUp 0.6s ease; }
-
   .result-emoji {
     font-size: 4rem;
     display: block;
     margin-bottom: 12px;
     animation: bounce 2s ease infinite;
   }
-
   .result-title {
     font-family: 'Fredoka', sans-serif;
     font-size: 1.8rem;
     font-weight: 700;
     margin-bottom: 8px;
-    color: var(--accent);
+    color: #f2a65a;
   }
-
-  .result-score {
-    color: var(--text-dim);
-    font-size: 1.1rem;
-    margin-bottom: 28px;
-  }
-
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), #2dd4bf);
-    border: none;
-    border-radius: 16px;
-    padding: 16px 32px;
-    color: white;
-    font-family: 'Nunito', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    min-width: 220px;
-  }
-
-  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 24px var(--accent-glow); }
-
+  .result-score { color: var(--text-dim); font-size: 1.1rem; margin-bottom: 28px; }
+  .btn-group { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  .btn-primary { min-width: 220px; padding: 16px 32px; }
   .btn-secondary {
     background: var(--surface);
     border: 2px solid rgba(255,255,255,0.1);
@@ -317,16 +338,36 @@
     transition: all 0.2s ease;
     min-width: 220px;
   }
-
   .btn-secondary:hover { background: var(--card-hover); border-color: var(--accent); }
+  .btn-secondary:active { transform: scale(0.95); }
+
+  /* Kleine Beispielmauer auf dem Startbildschirm */
+  .demo { --bw: 64px; --bh: 32px; --gap: 5px; display: inline-flex; margin-top: 24px; }
+  .demo .brick { font-size: 1.05rem; }
 
   @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 70% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
   @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.55; transform: scale(0.9); } }
+  @keyframes brickIn {
+    from { opacity: 0; transform: translateY(-36px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes brickDrop {
+    0%   { transform: translateY(-60px) scale(1.08); }
+    70%  { transform: translateY(4px) scale(1); }
+    100% { transform: translateY(0); }
+  }
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
 
   @media (max-width: 400px) {
-    .container { padding: 50px 16px 60px; }
-    .stone { width: 60px; height: 60px; font-size: 1.4rem; }
+    .container { padding: 64px 14px 60px; }
+    :root { --gap: 6px; }
   }
 </style>
 </head>
@@ -336,31 +377,33 @@
 
 <div class="container">
   <div id="start-screen">
-    <span class="game-icon">🧱</span>
+    <div class="wall demo" id="demo-wall"></div>
     <h1>Rechenmauer</h1>
-    <p class="subtitle">Zwei Steine ergeben den Stein darüber. Finde die fehlende Zahl!</p>
+    <p class="subtitle">Zwei Steine nebeneinander ergeben zusammen den Stein darüber. Finde die fehlende Zahl!</p>
     <button class="btn-start" onclick="startGame()">Spiel starten</button>
   </div>
 
-  <div id="game-screen" style="display:none">
+  <div id="game-screen" class="dn">
     <div class="progress-bar-wrap">
       <span class="progress-text" id="progress-text">1 / 10</span>
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:10%"></div>
-      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:10%"></div></div>
       <span class="score-display" id="score-display">⭐ 0</span>
     </div>
 
-    <div class="wall-card" id="wall-card"></div>
+    <div class="site">
+      <div class="hint">Welcher Stein fehlt?</div>
+      <div class="wall" id="wall"></div>
+      <div class="ground"></div>
+    </div>
 
     <div class="input-row">
-      <input type="number" id="answer-input" placeholder="?">
-      <button class="btn-submit" onclick="submitAnswer()">✓</button>
+      <input type="number" id="answer-input" inputmode="numeric" pattern="[0-9]*" placeholder="?" autocomplete="off">
+      <button class="btn-submit" id="submit-btn" onclick="submitAnswer()">✓</button>
     </div>
     <div class="feedback" id="feedback"></div>
   </div>
 
-  <div id="result-screen" style="display:none">
+  <div id="result-screen" class="dn">
     <span class="result-emoji" id="result-emoji">🏆</span>
     <div class="result-title" id="result-title">Super!</div>
     <div class="result-score" id="result-score"></div>
@@ -373,51 +416,67 @@
 
 <script>
 var ROUNDS = 10;
-var current, score, results, answered;
-var wall, blankPos;
+var current, score, answered, wall;
+
 var startScreen = document.getElementById("start-screen");
 var gameScreen = document.getElementById("game-screen");
 var resultScreen = document.getElementById("result-screen");
 var progressText = document.getElementById("progress-text");
 var progressFill = document.getElementById("progress-fill");
 var scoreDisplay = document.getElementById("score-display");
-var wallCard = document.getElementById("wall-card");
+var wallEl = document.getElementById("wall");
 var answerInput = document.getElementById("answer-input");
-var submitBtn = document.querySelector(".btn-submit");
+var submitBtn = document.getElementById("submit-btn");
 var feedback = document.getElementById("feedback");
 
+// Steine: 0,1,2 = unten · 3 = 0+1, 4 = 1+2 (Mitte) · 5 = 3+4 (Spitze)
+// Reihen von oben nach unten, so wie sie auf dem Bildschirm stehen.
+var ROWS = [[5], [3, 4], [0, 1, 2]];
+
 function showScreen(screen) {
-  startScreen.style.display = "none";
-  gameScreen.style.display = "none";
-  resultScreen.style.display = "none";
-  screen.style.display = "block";
+  [startScreen, gameScreen, resultScreen].forEach(function(s) { s.classList.add("dn"); });
+  screen.classList.remove("dn");
 }
 
+function rand(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+
 function generateWall() {
-  // 3-row wall: [a][b] / [a+b, c] / [a+b+c]
-  var a = 1 + Math.floor(Math.random() * 8);
-  var b = 1 + Math.floor(Math.random() * 8);
-  var c = 1 + Math.floor(Math.random() * 8);
+  var a = rand(1, 9), b = rand(1, 9), c = rand(1, 9);
+  var s = [a, b, c, a + b, b + c, a + b + b + c];
+  var blank = rand(0, 5);
+  return { stones: s, blank: blank, answer: s[blank] };
+}
 
-  var middle1 = a + b;
-  var middle2 = b + c;
-  var top = middle1 + middle2;
-
-  // Randomly pick which stone is blank
-  var blanks = [0, 1, 2, 3, 4, 5];
-  blankPos = blanks[Math.floor(Math.random() * blanks.length)];
-
-  var w = [a, b, c, middle1, middle2, top];
-  var answer = w[blankPos];
-  w[blankPos] = null;
-
-  return { stones: w, answer: answer };
+// Zeichnet eine Mauer von unten nach oben (Animation startet unten)
+function buildWall(target, stones, blank) {
+  target.innerHTML = "";
+  ROWS.forEach(function(row, r) {
+    var rowEl = document.createElement("div");
+    rowEl.className = "row";
+    row.forEach(function(idx, i) {
+      var b = document.createElement("div");
+      b.className = "brick";
+      b.dataset.idx = idx;
+      b.style.setProperty("--h", rand(6, 16));
+      b.style.setProperty("--l", rand(40, 50) + "%");
+      // untere Reihe zuerst, dann Stein für Stein nach oben
+      var order = (ROWS.length - 1 - r) * 3 + i;
+      b.style.animationDelay = (order * 70) + "ms";
+      if (idx === blank) {
+        b.classList.add("hole");
+        b.innerHTML = "<span>?</span>";
+      } else {
+        b.textContent = stones[idx];
+      }
+      rowEl.appendChild(b);
+    });
+    target.appendChild(rowEl);
+  });
 }
 
 function startGame() {
   current = 0;
   score = 0;
-  results = [];
   showScreen(gameScreen);
   renderRound();
 }
@@ -428,37 +487,11 @@ function renderRound() {
   feedback.textContent = "";
   answerInput.value = "";
   answerInput.disabled = false;
+  submitBtn.disabled = false;
 
   wall = generateWall();
-
-  wallCard.innerHTML = "";
-
-  var row1 = document.createElement("div");
-  row1.className = "wall-row";
-  row1.innerHTML =
-    '<div class="stone ' + (blankPos === 0 ? "empty" : "") + '">' + (wall.stones[0] || "?") + '</div>' +
-    '<div class="stone ' + (blankPos === 1 ? "empty" : "") + '">' + (wall.stones[1] || "?") + '</div>';
-  wallCard.appendChild(row1);
-
-  var row2 = document.createElement("div");
-  row2.className = "wall-row";
-  row2.innerHTML =
-    '<div class="stone-spacing"></div>' +
-    '<div class="stone ' + (blankPos === 3 ? "empty" : "") + '">' + (wall.stones[3] || "?") + '</div>' +
-    '<div class="stone-spacing"></div>' +
-    '<div class="stone ' + (blankPos === 4 ? "empty" : "") + '">' + (wall.stones[4] || "?") + '</div>' +
-    '<div class="stone-spacing"></div>';
-  wallCard.appendChild(row2);
-
-  var row3 = document.createElement("div");
-  row3.className = "wall-row";
-  row3.innerHTML =
-    '<div class="stone-spacing"></div>' +
-    '<div class="stone-spacing"></div>' +
-    '<div class="stone ' + (blankPos === 5 ? "empty" : "") + '">' + (wall.stones[5] || "?") + '</div>' +
-    '<div class="stone-spacing"></div>' +
-    '<div class="stone-spacing"></div>';
-  wallCard.appendChild(row3);
+  wallEl.classList.remove("shake");
+  buildWall(wallEl, wall.stones, wall.blank);
 
   progressText.textContent = (current + 1) + " / " + ROUNDS;
   progressFill.style.width = (((current + 1) / ROUNDS) * 100) + "%";
@@ -469,69 +502,69 @@ function renderRound() {
 
 function submitAnswer() {
   if (answered) return;
-  answered = true;
 
-  var userAnswer = parseInt(answerInput.value);
+  var userAnswer = parseInt(answerInput.value, 10);
   if (isNaN(userAnswer)) {
     feedback.className = "feedback show is-wrong";
     feedback.textContent = "Bitte eine Zahl eingeben!";
-    answered = false;
     answerInput.focus();
     return;
   }
 
-  var isCorrect = userAnswer === wall.answer;
-
-  var stones = wallCard.querySelectorAll(".stone.empty");
-  var stone = stones[0];
-
-  if (isCorrect) {
-    score++;
-    stone.textContent = wall.answer;
-    stone.classList.remove("empty");
-    stone.classList.add("correct");
-    feedback.className = "feedback show is-correct";
-    feedback.textContent = "✓ Richtig!";
-  } else {
-    stone.textContent = wall.answer;
-    stone.classList.remove("empty");
-    stone.classList.add("wrong");
-    feedback.className = "feedback show is-wrong";
-    feedback.textContent = "✗ Die Antwort ist " + wall.answer + "!";
-  }
-
+  answered = true;
   answerInput.disabled = true;
   submitBtn.disabled = true;
 
-  results.push({
-    answer: wall.answer,
-    correct: isCorrect
-  });
+  var isCorrect = userAnswer === wall.answer;
+  var old = wallEl.querySelector('.brick[data-idx="' + wall.blank + '"]');
+
+  // Neuen Ziegel einsetzen (frisches Element, damit die Animation sauber startet)
+  var brick = document.createElement("div");
+  brick.className = "brick placed " + (isCorrect ? "correct" : "wrong");
+  brick.dataset.idx = wall.blank;
+  brick.style.setProperty("--h", 12);
+  brick.style.setProperty("--l", "46%");
+  brick.textContent = wall.answer;
+  old.parentNode.replaceChild(brick, old);
+
+  if (isCorrect) {
+    score++;
+    scoreDisplay.textContent = "⭐ " + score;
+    feedback.className = "feedback show is-correct";
+    feedback.textContent = "✓ Richtig, der Stein passt!";
+  } else {
+    void wallEl.offsetWidth;
+    wallEl.classList.add("shake");
+    feedback.className = "feedback show is-wrong";
+    feedback.textContent = "✗ Du hast " + userAnswer + " geschrieben – richtig ist " + wall.answer + ".";
+  }
 
   setTimeout(function() {
     current++;
-    if (current < ROUNDS) {
-      renderRound();
-    } else {
-      showResults();
-    }
-  }, 1400);
+    if (current < ROUNDS) renderRound();
+    else showResults();
+  }, isCorrect ? 1400 : 2600);
 }
+
+answerInput.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") submitAnswer();
+});
 
 function showResults() {
   showScreen(resultScreen);
   var pct = Math.round((score / ROUNDS) * 100);
   var trophy, title;
-
-  if (pct === 100) { trophy = "🏆"; title = "Perfekt!"; }
+  if (pct === 100) { trophy = "🏆"; title = "Perfekt gemauert!"; }
   else if (pct >= 80) { trophy = "🌟"; title = "Super gemacht!"; }
   else if (pct >= 60) { trophy = "👏"; title = "Gut gemacht!"; }
   else { trophy = "💪"; title = "Weiter üben!"; }
-
   document.getElementById("result-emoji").textContent = trophy;
   document.getElementById("result-title").textContent = title;
-  document.getElementById("result-score").innerHTML = "Du hast <strong>" + score + " von " + ROUNDS + "</strong> richtig";
+  document.getElementById("result-score").innerHTML = "Du hast <strong>" + score + " von " + ROUNDS + "</strong> Steinen richtig gesetzt";
 }
+
+// Beispielmauer auf dem Startbildschirm: 3, 4, 2 → 7, 6 → 13
+buildWall(document.getElementById("demo-wall"), [3, 4, 2, 7, 6, 13], -1);
 </script>
 </body>
 </html>
